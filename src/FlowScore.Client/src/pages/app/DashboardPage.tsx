@@ -2,6 +2,7 @@ import PageTitle from "../../components/ui/PageTitle";
 import Card from "../../components/ui/Card";
 import Button from "../../components/ui/Button";
 import Input from "../../components/ui/Input";
+import FlowScoreTriangle from "../../components/flowscore/FlowScoreTriangle";
 
 function DashboardPage(){
     return (
@@ -12,6 +13,11 @@ function DashboardPage(){
             />
 
             <Card>
+                <FlowScoreTriangle
+                    recovery={82}
+                    nutrition={75}
+                    training={91}
+                />
                 <h2 className="text-xl font-semibold text-white">
                     Welcome to Flowscore
                 </h2>
