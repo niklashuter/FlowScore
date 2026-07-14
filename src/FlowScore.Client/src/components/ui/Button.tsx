@@ -15,13 +15,13 @@ function Button ({
 }: ButtonProps) {
 
     const variantClasses = {
-        primary: "bg-primary text-background hover:bg-primary-hover",
-        secondary: "bg-surface-light text-text-main hover:bg-border",
-        danger: "bg-danger text-white hover:bg-danger-hover",
+        primary:"bg-primary text-white hover:brightness-110 hover:-translate-y-0.5",
+        secondary:"bg-surface-light text-text-main hover:brightness-110 hover:-translate-y-0.5",
+        danger:"g-red-500 text-white hover:brightness-110 hover:-translate-y-0.5",
     };
 
-    const baseClasses = 
-        "rounded-lg px-4 py-2 font-medium transition-colors duration-200 select-none focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background";
+    const baseClasses =
+        "rounded-lg px-4 py-2 font-medium transition-all duration-200 select-none focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background cursor-pointer";
 
     return (
         <button
