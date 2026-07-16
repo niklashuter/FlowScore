@@ -1,16 +1,29 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Button from "../ui/Button";
 import Card from "../ui/Card";
 import Modal from "../ui/Modal";
 import SelectField from "../ui/SelectField";
 import CardActionButton from "../ui/CardActionButton";
+import {
+    createRecoveryEntry,
+    getRecoveryEntryByDate,
+    updateRecoveryEntry,
+    type RecoveryEntry,
+} from "../../api/recoveryApi";
 
 function MorningCheckInCard() {
-    const [recoveryEntry, setRecoveryEntry] = useState({
-        sleepDuration: "8 hours",
-        sleepQuality: "Good",
-        morningFeeling: "Rested",
-    });
+    const [recoveryEntry, setRecoveryEntry] =
+    useState<RecoveryEntry | null>(null);
+
+    const [isLoading, setIsLoading] = useState(true);
+    const [error, setError] = useState("");
+    const currentDate = new Date();
+
+    const today = [
+        currentDate.getFullYear(),
+        String(currentDate.getMonth() + 1).padStart(2, "0"),
+        String(currentDate.getDate()).padStart(2, "0"),
+    ].join("-");
 
     const [isCheckInModalOpen, setIsCheckInModalOpen] = useState(false);
 
@@ -44,7 +57,32 @@ function MorningCheckInCard() {
         { label: "Rested", value: "rested" },
     ];
 
-    function handleSaveCheckIn() {
+    async function loadRecoveryEntry() {
+        setIsLoading(true);
+        setError("");
+
+        try {
+            const loadedRecoveryEntry =
+                await getRecoveryEntryByDate(today);
+
+            setRecoveryEntry(loadedRecoveryEntry);
+        } catch (error) {
+            console.error(
+                "Failed to load recovery entry:",
+                error
+            );
+
+            setError("Unable to load recovery entry.");
+        } finally {
+            setIsLoading(false);
+        }
+    }
+
+    useEffect(() => {
+        loadRecoveryEntry();
+    }, [today]);
+
+    async function handleSaveCheckIn() {
         const selectedSleepDuration = sleepDurationOptions.find(
             (option) => option.value === sleepDuration
         );
@@ -65,31 +103,52 @@ function MorningCheckInCard() {
             return;
         }
 
-        setRecoveryEntry({
-            sleepDuration: selectedSleepDuration.label,
+        const recoveryRequest = {
+            sleepDurationHours: Number(selectedSleepDuration.value),
             sleepQuality: selectedSleepQuality.label,
             morningFeeling: selectedMorningFeeling.label,
-        });
+            date: today,
+        };
 
-        setIsCheckInModalOpen(false);
+        try {
+            if (recoveryEntry) {
+                await updateRecoveryEntry(
+                    recoveryEntry.id,
+                    recoveryRequest
+                );
+            } else {
+                await createRecoveryEntry(recoveryRequest);
+            }
+
+            await loadRecoveryEntry();
+            setIsCheckInModalOpen(false);
+        } catch (error) {
+            console.error(
+                "Failed to save recovery entry:",
+                error
+            );
+
+            setError("Unable to save recovery entry.");
+        }
     }
 
     function handleEditCheckIn() {
-        const matchingSleepDuration = sleepDurationOptions.find(
-            (option) => option.label === recoveryEntry.sleepDuration
+        if (!recoveryEntry) {
+            return;
+        }
+
+        setSleepDuration(
+            recoveryEntry.sleepDurationHours.toString()
         );
 
-        const matchingSleepQuality = sleepQualityOptions.find(
-            (option) => option.label === recoveryEntry.sleepQuality
+        setSleepQuality(
+            recoveryEntry.sleepQuality.toLowerCase()
         );
 
-        const matchingMorningFeeling = morningFeelingOptions.find(
-            (option) => option.label === recoveryEntry.morningFeeling
+        setMorningFeeling(
+            recoveryEntry.morningFeeling.toLowerCase()
         );
 
-        setSleepDuration(matchingSleepDuration?.value ?? "8");
-        setSleepQuality(matchingSleepQuality?.value ?? "good");
-        setMorningFeeling(matchingMorningFeeling?.value ?? "rested");
         setIsCheckInModalOpen(true);
     }
 
@@ -108,60 +167,92 @@ function MorningCheckInCard() {
                     </div>
 
                     <Button
-                        onClick={() => setIsCheckInModalOpen(true)}
+                        onClick={() => {
+                            if (recoveryEntry) {
+                                handleEditCheckIn();
+                            } else {
+                                setIsCheckInModalOpen(true);
+                            }
+                        }}
                     >
-                        Complete Check-in
+                        {recoveryEntry
+                            ? "Update Check-in"
+                            : "Complete Check-in"}
                     </Button>
                 </div>
 
-                <div className="rounded-xl bg-surface-light p-4">
-                    <div className="flex items-center justify-between gap-4">
-                        <p className="text-sm font-medium text-text-main">
-                            Today's Recovery
-                        </p>
+                {error && (
+                    <p className="text-sm text-red-400">
+                        {error}
+                    </p>
+                )}
 
-                        <CardActionButton onClick={handleEditCheckIn}>
-                            Edit
-                        </CardActionButton>
+                {isLoading && (
+                    <p className="text-sm text-text-muted">
+                        Loading recovery entry...
+                    </p>
+                )}
+
+                {!isLoading && recoveryEntry && (
+                    <div className="rounded-xl bg-surface-light p-4">
+                        <div className="flex items-center justify-between gap-4">
+                            <p className="text-sm font-medium text-text-main">
+                                Today's Recovery
+                            </p>
+
+                            <CardActionButton onClick={handleEditCheckIn}>
+                                Edit
+                            </CardActionButton>
+                        </div>
+
+                        <div className="grid gap-4 sm:grid-cols-3">
+                            <div>
+                                <p className="text-xs text-text-muted">
+                                    Sleep Duration
+                                </p>
+
+                                <p className="mt-1 font-medium text-text-main">
+                                    {recoveryEntry.sleepDurationHours} hours
+                                </p>
+                            </div>
+
+                            <div>
+                                <p className="text-xs text-text-muted">
+                                    Sleep Quality
+                                </p>
+
+                                <p className="mt-1 font-medium text-text-main">
+                                    {recoveryEntry.sleepQuality}
+                                </p>
+                            </div>
+
+                            <div>
+                                <p className="text-xs text-text-muted">
+                                    Wake-up Feeling
+                                </p>
+
+                                <p className="mt-1 font-medium text-text-main">
+                                    {recoveryEntry.morningFeeling}
+                                </p>
+                            </div>
+                        </div>
                     </div>
+                )}
 
-                    <div className="grid gap-4 sm:grid-cols-3">
-                        <div>
-                            <p className="text-xs text-text-muted">
-                                Sleep Duration
-                            </p>
-
-                            <p className="mt-1 font-medium text-text-main">
-                                {recoveryEntry.sleepDuration}
-                            </p>
-                        </div>
-
-                        <div>
-                            <p className="text-xs text-text-muted">
-                                Sleep Quality
-                            </p>
-
-                            <p className="mt-1 font-medium text-text-main">
-                                {recoveryEntry.sleepQuality}
-                            </p>
-                        </div>
-
-                        <div>
-                            <p className="text-xs text-text-muted">
-                                Wake-up Feeling
-                            </p>
-
-                            <p className="mt-1 font-medium text-text-main">
-                                {recoveryEntry.morningFeeling}
-                            </p>
-                        </div>
-                    </div>
-                </div>
+                {!isLoading && !recoveryEntry && (
+                    <p className="text-sm text-text-muted">
+                        No recovery entry has been recorded for today.
+                    </p>
+                )}
             </div>
 
             <Modal
                 isOpen={isCheckInModalOpen}
-                title="Morning Check-in"
+                title={
+                    recoveryEntry
+                        ? "Edit Morning Check-in"
+                        : "Morning Check-in"
+                }
                 onClose={() => setIsCheckInModalOpen(false)}
             >
                 <div className="space-y-5">

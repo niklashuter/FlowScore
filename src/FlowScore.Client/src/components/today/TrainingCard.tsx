@@ -2,9 +2,15 @@ import Button from "../ui/Button";
 import Card from "../ui/Card";
 import TrainingSessionCard from "./TrainingSessionCard";
 import Modal from "../ui/Modal";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import SelectField from "../ui/SelectField";
-import CardActionButton from "../ui/CardActionButton";
+import {
+    createTrainingSession,
+    deleteTrainingSession,
+    getTrainingSessionsByDate,
+    updateTrainingSession,
+    type TrainingSession,
+} from "../../api/trainingApi";
 
 function TrainingCard() {
     const [isTrainingModalOpen, setIsTrainingModalOpen] = useState(false);
@@ -16,14 +22,19 @@ function TrainingCard() {
     const [editingTrainingId, setEditingTrainingId] =
         useState<number | null>(null);
 
-    const [trainingSessions, setTrainingSessions] = useState([
-        {
-            id: 1,
-            type: "Strength Training",
-            duration: "60 min",
-            intensity: "Moderate",
-        },
-    ]);
+    const [trainingSessions, setTrainingSessions] =
+    useState<TrainingSession[]>([]);
+
+    const [isLoading, setIsLoading] = useState(true);
+    const [error, setError] = useState("");
+
+    const currentDate = new Date();
+
+    const today = [
+        currentDate.getFullYear(),
+        String(currentDate.getMonth() + 1).padStart(2, "0"),
+        String(currentDate.getDate()).padStart(2, "0"),
+    ].join("-");
 
     const trainingTypeOptions = [
         { label: "Strength Training", value: "strength" },
@@ -52,6 +63,31 @@ function TrainingCard() {
         { label: "Hard", value: "hard" },
     ];
 
+    async function loadTrainingSessions() {
+        setIsLoading(true);
+        setError("");
+
+        try {
+            const loadedTrainingSessions =
+                await getTrainingSessionsByDate(today);
+
+            setTrainingSessions(loadedTrainingSessions);
+        } catch (error) {
+            console.error(
+                "Failed to load training sessions:",
+                error
+            );
+
+            setError("Unable to load training sessions.");
+        } finally {
+            setIsLoading(false);
+        }
+    }
+
+    useEffect(() => {
+        loadTrainingSessions();
+    }, [today]);
+
     function resetTrainingForm() {
         setTrainingType("strength");
         setTrainingDuration("60");
@@ -59,7 +95,7 @@ function TrainingCard() {
         setEditingTrainingId(null);
     }
 
-    function handleSaveTraining() {
+    async function handleSaveTraining() {
         const selectedTrainingType = trainingTypeOptions.find(
             (option) => option.value === trainingType
         );
@@ -80,35 +116,34 @@ function TrainingCard() {
             return;
         }
 
-        if (editingTrainingId !== null) {
-            setTrainingSessions((currentSessions) =>
-                currentSessions.map((session) =>
-                    session.id === editingTrainingId
-                        ? {
-                            ...session,
-                            type: selectedTrainingType.label,
-                            duration: selectedDuration.label,
-                            intensity: selectedIntensity.label,
-                        }
-                        : session
-                )
+        const trainingRequest = {
+            type: selectedTrainingType.label,
+            durationMinutes: Number(selectedDuration.value),
+            intensity: selectedIntensity.label,
+            date: today,
+        };
+
+        try {
+            if (editingTrainingId !== null) {
+                await updateTrainingSession(
+                    editingTrainingId,
+                    trainingRequest
+                );
+            } else {
+                await createTrainingSession(trainingRequest);
+            }
+
+            await loadTrainingSessions();
+            resetTrainingForm();
+            setIsTrainingModalOpen(false);
+        } catch (error) {
+            console.error(
+                "Failed to save training session:",
+                error
             );
-        } else {
-            const newTrainingSession = {
-                id: Date.now(),
-                type: selectedTrainingType.label,
-                duration: selectedDuration.label,
-                intensity: selectedIntensity.label,
-            };
 
-            setTrainingSessions((currentSessions) => [
-                ...currentSessions,
-                newTrainingSession,
-            ]);
+            setError("Unable to save training session.");
         }
-
-        resetTrainingForm();
-        setIsTrainingModalOpen(false);
     }
 
     function handleEditTraining(trainingId: number) {
@@ -125,7 +160,9 @@ function TrainingCard() {
         );
 
         const matchingDuration = durationOptions.find(
-            (option) => option.label === trainingToEdit.duration
+            (option) =>
+                Number(option.value) ===
+                trainingToEdit.durationMinutes
         );
 
         const matchingIntensity = intensityOptions.find(
@@ -139,12 +176,18 @@ function TrainingCard() {
         setIsTrainingModalOpen(true);
     }
 
-    function handleDeleteTraining(trainingId: number) {
-        setTrainingSessions((currentSessions) =>
-            currentSessions.filter(
-                (session) => session.id !== trainingId
-            )
-        );
+    async function handleDeleteTraining(trainingId: number) {
+        try {
+            await deleteTrainingSession(trainingId);
+            await loadTrainingSessions();
+        } catch (error) {
+            console.error(
+                "Failed to delete training session:",
+                error
+            );
+
+            setError("Unable to delete training session.");
+        }
     }
 
     return (
@@ -172,17 +215,33 @@ function TrainingCard() {
                     </Button>
                 </div>
 
+                {error && (
+                    <p className="text-sm text-red-400">
+                        {error}
+                    </p>
+                )}
+
                 <div className="space-y-3">
-                    {trainingSessions.map((session) => (
-                        <TrainingSessionCard
-                            key={session.id}
-                            type={session.type}
-                            duration={session.duration}
-                            intensity={session.intensity}
-                            onEdit={() => handleEditTraining(session.id)}
-                            onDelete={() => handleDeleteTraining(session.id)}
-                        />
-                    ))}
+                    {isLoading ? (
+                        <p className="text-sm text-text-muted">
+                            Loading training sessions...
+                        </p>
+                    ) : trainingSessions.length === 0 ? (
+                        <p className="text-sm text-text-muted">
+                            No training sessions have been added for today.
+                        </p>
+                    ) : (
+                        trainingSessions.map((session) => (
+                            <TrainingSessionCard
+                                key={session.id}
+                                type={session.type}
+                                duration={`${session.durationMinutes} min`}
+                                intensity={session.intensity}
+                                onEdit={() => handleEditTraining(session.id)}
+                                onDelete={() => handleDeleteTraining(session.id)}
+                            />
+                        ))
+                    )}
                 </div>
             </div>
             <Modal

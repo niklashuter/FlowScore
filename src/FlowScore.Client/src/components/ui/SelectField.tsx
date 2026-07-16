@@ -20,6 +20,7 @@ function SelectField({
 }: SelectFieldProps) {
     const [isOpen, setIsOpen] = useState(false);
     const containerRef = useRef<HTMLDivElement>(null);
+    const selectedOptionRef = useRef<HTMLButtonElement>(null);
     const selectId = useId();
 
     const selectedOption = options.find(
@@ -50,6 +51,18 @@ function SelectField({
             document.removeEventListener("keydown", handleEscapeKey);
         };
     }, []);
+
+    useEffect(() => {
+        if (!isOpen) {
+            return;
+        }
+
+        requestAnimationFrame(() => {
+            selectedOptionRef.current?.scrollIntoView({
+                block: "center",
+            });
+        });
+    }, [isOpen]);
 
     function handleSelect(optionValue: string) {
         onChange(optionValue);
@@ -111,8 +124,9 @@ function SelectField({
                         absolute
                         z-20
                         mt-2
+                        max-h-64
                         w-full
-                        overflow-hidden
+                        overflow-y-auto
                         rounded-lg
                         border
                         border-border
@@ -124,6 +138,11 @@ function SelectField({
                     {options.map((option) => (
                         <button
                             key={option.value}
+                            ref={
+                                option.value === value
+                                    ? selectedOptionRef
+                                    : undefined
+                            }
                             type="button"
                             role="option"
                             aria-selected={option.value === value}
@@ -133,7 +152,7 @@ function SelectField({
                                 cursor-pointer
                                 rounded-md
                                 px-3
-                                py-2
+                                py-1.5
                                 text-left
                                 text-sm
                                 text-text-main
