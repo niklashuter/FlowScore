@@ -13,7 +13,13 @@ import {
     type Meal,
 } from "../../api/mealsApi";
 
-function MealsCard() {
+type MealsCardProps = {
+    onMealsChanged: () => void;
+};
+
+function MealsCard({
+    onMealsChanged,
+}: MealsCardProps) {
     const [isMealModalOpen, setIsMealModalOpen] = useState(false);
     const [mealType, setMealType] = useState("breakfast");
     const [mealTime, setMealTime] = useState("08:00");
@@ -117,6 +123,7 @@ function MealsCard() {
             }
 
             await loadMeals();
+            onMealsChanged();
             resetMealForm();
             setIsMealModalOpen(false);
         } catch (error) {
@@ -147,6 +154,7 @@ function MealsCard() {
         try {
             await deleteMeal(mealId);
             await loadMeals();
+            onMealsChanged();
         } catch (error) {
             console.error("Failed to delete meal:", error);
             setError("Unable to delete meal.");
@@ -214,6 +222,16 @@ function MealsCard() {
                                         <p className="mt-2 text-sm text-text-muted">
                                             {meal.description}
                                         </p>
+
+                                        <div className="mt-3 space-y-2">
+                                            <p className="text-sm font-medium text-text-main">
+                                                Nutrition Score: {meal.nutritionScore}/100
+                                            </p>
+
+                                            <p className="whitespace-pre-line text-sm leading-6 text-text-muted">
+                                                {meal.nutritionFeedback}
+                                            </p>
+                                        </div>
                                     </div>
 
                                     <div className="flex gap-2">

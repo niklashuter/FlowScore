@@ -11,4 +11,8 @@ public class Meal
     public TimeOnly Time { get; set; }
 
     public DateOnly Date { get; set; }
+
+    public int? NutritionScore { get; set; }
+
+    public string? NutritionFeedback { get; set; }
 }

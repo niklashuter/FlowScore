@@ -1,5 +1,6 @@
 using FlowScore.Api.Data;
 using Microsoft.EntityFrameworkCore;
+using FlowScore.Api.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 const string frontendCorsPolicy = "FrontendCorsPolicy";
@@ -23,9 +24,11 @@ builder.Services.AddCors(options =>
 
 // Add services to the container.
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
+builder.Services.AddScoped<FlowScoreCalculator>();
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+builder.Services.AddScoped<MealNutritionAnalyzer>();
 
 var app = builder.Build();
 

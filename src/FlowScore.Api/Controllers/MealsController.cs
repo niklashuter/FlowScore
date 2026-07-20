@@ -2,6 +2,7 @@ using FlowScore.Api.Data;
 using FlowScore.Api.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using FlowScore.Api.Services;
 
 namespace FlowScore.Api.Controllers;
 
@@ -10,10 +11,15 @@ namespace FlowScore.Api.Controllers;
 public class MealsController : ControllerBase
 {
     private readonly FlowScoreDbContext _dbContext;
+    private readonly MealNutritionAnalyzer _mealNutritionAnalyzer;
 
-    public MealsController(FlowScoreDbContext dbContext)
+    public MealsController(
+        FlowScoreDbContext context,
+        MealNutritionAnalyzer mealNutritionAnalyzer
+    )
     {
-        _dbContext = dbContext;
+        _dbContext = context;
+        _mealNutritionAnalyzer = mealNutritionAnalyzer;
     }
 
     [HttpGet]
@@ -43,6 +49,14 @@ public class MealsController : ControllerBase
     [HttpPost]
     public async Task<ActionResult<Meal>> CreateMeal(Meal meal)
     {
+        var analysis = await _mealNutritionAnalyzer.AnalyzeMealAsync(
+            meal.Description,
+            meal.Type
+        );
+
+        meal.NutritionScore = analysis.NutritionScore;
+        meal.NutritionFeedback = analysis.Feedback;
+
         _dbContext.Meals.Add(meal);
         await _dbContext.SaveChangesAsync();
 
@@ -74,6 +88,31 @@ public class MealsController : ControllerBase
         if (existingMeal is null)
         {
             return NotFound();
+        }
+
+        var descriptionChanged =
+            !string.Equals(
+                existingMeal.Description,
+                updatedMeal.Description,
+                StringComparison.Ordinal
+            );
+
+        var typeChanged =
+            !string.Equals(
+                existingMeal.Type,
+                updatedMeal.Type,
+                StringComparison.Ordinal
+            );
+
+        if (descriptionChanged || typeChanged)
+        {
+            var analysis = await _mealNutritionAnalyzer.AnalyzeMealAsync(
+                updatedMeal.Description,
+                updatedMeal.Type
+            );
+
+            existingMeal.NutritionScore = analysis.NutritionScore;
+            existingMeal.NutritionFeedback = analysis.Feedback;
         }
 
         existingMeal.Type = updatedMeal.Type;

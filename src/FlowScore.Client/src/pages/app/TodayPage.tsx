@@ -3,8 +3,18 @@ import MorningCheckInCard from "../../components/today/MorningCheckInCard";
 import MealsCard from "../../components/today/MealsCard";
 import TrainingCard from "../../components/today/TrainingCard";
 import TodayFlowScoreCard from "../../components/today/TodayFlowScoreCard";
+import { useState } from "react";
 
 function TodayPage(){
+    const [flowScoreRefreshKey, setFlowScoreRefreshKey] =
+        useState(0);
+
+    function refreshFlowScore() {
+        setFlowScoreRefreshKey(
+            (currentKey) => currentKey + 1
+        );
+    }
+
     return (
         <div className="space-y-6">
             <PageTitle
@@ -15,11 +25,15 @@ function TodayPage(){
             <div className="grid gap-6 xl:grid-cols-[1.2fr_1fr]">
                 <div className="space-y-6">
                     <MorningCheckInCard/>
-                    <MealsCard />
+                    <MealsCard 
+                        onMealsChanged={refreshFlowScore}
+                    />
                     <TrainingCard />
                 </div>
 
-                <TodayFlowScoreCard />
+                <TodayFlowScoreCard
+                    refreshKey={flowScoreRefreshKey}
+                />
             </div>
         </div>
     );

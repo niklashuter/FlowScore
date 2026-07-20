@@ -4,6 +4,8 @@ export type Meal = {
     description: string;
     time: string;
     date: string;
+    nutritionScore: number;
+    nutritionFeedback: string;
 };
 
 export type CreateMealRequest = {
