@@ -7,10 +7,12 @@ import {
 } from "../../api/flowScoreApi";
 
 type TodayFlowScoreCardProps = {
+    today: string;
     refreshKey: number;
 };
 
 function TodayFlowScoreCard({
+    today,
     refreshKey,
 }: TodayFlowScoreCardProps) {
     const [scores, setScores] =
@@ -44,7 +46,7 @@ function TodayFlowScoreCard({
         }
 
         loadFlowScore();
-    }, [refreshKey]);
+    }, [refreshKey, today]);
 
     if (error) {
         return (
@@ -76,9 +78,9 @@ function TodayFlowScoreCard({
                 </div>
 
                 <FlowScoreTriangle
-                    recovery={82}
+                    recovery={scores?.recoveryScore ?? 0}
                     nutrition={scores?.nutritionScore ?? 0}
-                    training={91}
+                    training={scores?.trainingScore ?? 0}
                 />
             </div>
         </Card>

@@ -11,19 +11,20 @@ import {
     type RecoveryEntry,
 } from "../../api/recoveryApi";
 
-function MorningCheckInCard() {
+type MorningCheckInCardProps = {
+    today: string;
+    onRecoveryChanged?: () => void;
+};
+
+function MorningCheckInCard({
+    today,
+    onRecoveryChanged,
+}: MorningCheckInCardProps) {
     const [recoveryEntry, setRecoveryEntry] =
     useState<RecoveryEntry | null>(null);
 
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState("");
-    const currentDate = new Date();
-
-    const today = [
-        currentDate.getFullYear(),
-        String(currentDate.getMonth() + 1).padStart(2, "0"),
-        String(currentDate.getDate()).padStart(2, "0"),
-    ].join("-");
 
     const [isCheckInModalOpen, setIsCheckInModalOpen] = useState(false);
 
@@ -121,6 +122,7 @@ function MorningCheckInCard() {
             }
 
             await loadRecoveryEntry();
+            onRecoveryChanged?.();
             setIsCheckInModalOpen(false);
         } catch (error) {
             console.error(

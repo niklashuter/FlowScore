@@ -24,7 +24,8 @@ public class FlowScoreCalculator
         var nutritionScore =
             await CalculateNutritionScoreAsync(date);
 
-        var trainingScore = CalculateTrainingScore();
+        var trainingScore =
+            await CalculateTrainingScoreAsync(date);
 
         var flowScore = CalculateFlowScore(
             recoveryScore,
@@ -77,7 +78,7 @@ public class FlowScoreCalculator
         decimal sleepDurationHours
     )
     {
-        if (sleepDurationHours >= 7.5m &&
+        if (sleepDurationHours >= 8m &&
             sleepDurationHours <= 9m)
         {
             return 100;
@@ -85,7 +86,7 @@ public class FlowScoreCalculator
 
         if (
             (sleepDurationHours >= 6.5m &&
-            sleepDurationHours < 7.5m) ||
+            sleepDurationHours < 8m) ||
             (sleepDurationHours > 9m &&
             sleepDurationHours <= 10m)
         )
@@ -251,9 +252,119 @@ public class FlowScoreCalculator
         return Math.Min(baseFactor + snackBonus, 1.00);
     }
 
-    private static int CalculateTrainingScore()
+    private async Task<int> CalculateTrainingScoreAsync(
+        DateOnly date
+    )
     {
-        return 0;
+        var trainingDay = await _dbContext.TrainingDays
+            .SingleOrDefaultAsync(day => day.Date == date);
+
+        if (trainingDay?.IsRestDay == true)
+        {
+            return 80;
+        }
+
+        var trainingSessions = await _dbContext.TrainingSessions
+            .Where(session => session.Date == date)
+            .ToListAsync();
+
+        if (trainingSessions.Count == 0)
+        {
+            return 0;
+        }
+
+        var sessionScores = trainingSessions
+            .Select(CalculateTrainingSessionScore);
+
+        return (int)Math.Round(sessionScores.Average());
+    }
+
+    private static int CalculateTrainingSessionScore(
+        TrainingSession trainingSession
+    )
+    {
+        var trainingLoadScore =
+            CalculateTrainingLoadScore(
+                trainingSession.DurationMinutes,
+                trainingSession.Intensity
+            );
+
+        var typeScore =
+            CalculateTrainingTypeScore(
+                trainingSession.Type
+            );
+
+        var sessionScore =
+            trainingLoadScore * 0.80 +
+            typeScore * 0.20;
+
+        return (int)Math.Round(sessionScore);
+    }
+
+    private static int CalculateTrainingLoadScore(
+        int durationMinutes,
+        string intensity
+    )
+    {
+        return intensity.ToLowerInvariant() switch
+        {
+            // Training load score matrix:
+            //            30   60   90   120  150  180+
+            // Light      80   90   85    75   60   45
+            // Moderate   70   95  100    95   80   60
+            // Hard       70  100   95    75   55   35
+
+            "light" => durationMinutes switch
+            {
+                <= 30 => 80,
+                <= 60 => 90,
+                <= 90 => 85,
+                <= 120 => 75,
+                <= 150 => 60,
+                _ => 45
+            },
+
+            "moderate" => durationMinutes switch
+            {
+                <= 30 => 70,
+                <= 60 => 95,
+                <= 90 => 100,
+                <= 120 => 95,
+                <= 150 => 80,
+                _ => 60
+            },
+
+            "hard" => durationMinutes switch
+            {
+                <= 30 => 70,
+                <= 60 => 100,
+                <= 90 => 95,
+                <= 120 => 75,
+                <= 150 => 55,
+                _ => 35
+            },
+            
+            _ => 0
+        };
+    }
+
+    private static int CalculateTrainingTypeScore(
+        string trainingType
+    )
+    {
+        return trainingType.ToLowerInvariant() switch
+        {
+            "strength training" => 100,
+            "running" => 100,
+            "cycling" => 100,
+            "swimming" => 100,
+            "team sports" => 100,
+            "hiit" => 100,
+            "mobility" => 95,
+            "yoga" => 95,
+            "other" => 90,
+            _ => 0
+        };
     }
 
     private static int CalculateFlowScore(

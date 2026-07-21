@@ -58,6 +58,20 @@ public class TrainingSessionsController : ControllerBase
         TrainingSession trainingSession
     )
     {
+        var isRestDay = await _dbContext.TrainingDays
+            .AnyAsync(
+                day =>
+                    day.Date == trainingSession.Date &&
+                    day.IsRestDay
+            );
+
+        if (isRestDay)
+        {
+            return Conflict(
+                "A training session cannot be added on a rest day."
+            );
+        }
+
         _dbContext.TrainingSessions.Add(trainingSession);
         await _dbContext.SaveChangesAsync();
 
@@ -80,6 +94,20 @@ public class TrainingSessionsController : ControllerBase
         if (existingTrainingSession is null)
         {
             return NotFound();
+        }
+
+        var isRestDay = await _dbContext.TrainingDays
+            .AnyAsync(
+                day =>
+                    day.Date == updatedTrainingSession.Date &&
+                    day.IsRestDay
+            );
+
+        if (isRestDay)
+        {
+            return Conflict(
+                "A training session cannot be added on a rest day."
+            );
         }
 
         existingTrainingSession.Type = updatedTrainingSession.Type;

@@ -11,8 +11,20 @@ import {
     updateTrainingSession,
     type TrainingSession,
 } from "../../api/trainingApi";
+import {
+    getTrainingDayByDate,
+    updateTrainingDay,
+} from "../../api/trainingDayApi";
 
-function TrainingCard() {
+type TrainingCardProps = {
+    today: string;
+    onTrainingChanged?: () => void;
+};
+
+function TrainingCard({
+    today,
+    onTrainingChanged,
+}: TrainingCardProps) {
     const [isTrainingModalOpen, setIsTrainingModalOpen] = useState(false);
 
     const [trainingType, setTrainingType] = useState("strength");
@@ -27,14 +39,6 @@ function TrainingCard() {
 
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState("");
-
-    const currentDate = new Date();
-
-    const today = [
-        currentDate.getFullYear(),
-        String(currentDate.getMonth() + 1).padStart(2, "0"),
-        String(currentDate.getDate()).padStart(2, "0"),
-    ].join("-");
 
     const trainingTypeOptions = [
         { label: "Strength Training", value: "strength" },
@@ -63,6 +67,9 @@ function TrainingCard() {
         { label: "Hard", value: "hard" },
     ];
 
+    const [isRestDay, setIsRestDay] =
+    useState(false);
+
     async function loadTrainingSessions() {
         setIsLoading(true);
         setError("");
@@ -84,8 +91,55 @@ function TrainingCard() {
         }
     }
 
+    async function loadTrainingDay() {
+        try {
+            const trainingDay =
+                await getTrainingDayByDate(today);
+
+            setIsRestDay(
+                trainingDay?.isRestDay ?? false
+            );
+        } catch (error) {
+            console.error(error);
+        }
+    }
+
+    async function handleRestDayChange(
+        event: React.ChangeEvent<HTMLInputElement>
+    ) {
+        const checked = event.target.checked;
+
+        if (
+            checked &&
+            trainingSessions.length > 0
+        ) {
+            const confirmed = window.confirm(
+                "Marking today as a rest day will delete all training sessions. Continue?"
+            );
+
+            if (!confirmed) {
+                return;
+            }
+        }
+
+        try {
+            await updateTrainingDay(today, {
+                isRestDay: checked,
+            });
+
+            setIsRestDay(checked);
+
+            await loadTrainingSessions();
+
+            onTrainingChanged?.();
+        } catch (error) {
+            console.error(error);
+        }
+    }
+
     useEffect(() => {
         loadTrainingSessions();
+        loadTrainingDay();
     }, [today]);
 
     function resetTrainingForm() {
@@ -134,6 +188,7 @@ function TrainingCard() {
             }
 
             await loadTrainingSessions();
+            onTrainingChanged?.();
             resetTrainingForm();
             setIsTrainingModalOpen(false);
         } catch (error) {
@@ -180,6 +235,7 @@ function TrainingCard() {
         try {
             await deleteTrainingSession(trainingId);
             await loadTrainingSessions();
+            onTrainingChanged?.();
         } catch (error) {
             console.error(
                 "Failed to delete training session:",
@@ -194,7 +250,7 @@ function TrainingCard() {
         <Card>
             <div className="space-y-5">
                 <div className="flex items-start justify-between gap-4">
-                    <div>
+                   <div>
                         <h2 className="text-xl font-semibold text-text-main">
                             Training
                         </h2>
@@ -202,10 +258,24 @@ function TrainingCard() {
                         <p className="mt-2 text-sm text-text-muted">
                             Log today's movement or workout session.
                         </p>
+
+                        <label className="mt-4 flex items-center gap-3">
+                            <input
+                                type="checkbox"
+                                checked={isRestDay}
+                                onChange={handleRestDayChange}
+                                className="h-4 w-4 cursor-pointer"
+                            />
+
+                            <span className="text-sm text-text-muted">
+                                Today is a Rest Day
+                            </span>
+                        </label>
                     </div>
 
                     <Button
                         variant="secondary"
+                        disabled={isRestDay}
                         onClick={() => {
                             resetTrainingForm();
                             setIsTrainingModalOpen(true);
@@ -226,6 +296,16 @@ function TrainingCard() {
                         <p className="text-sm text-text-muted">
                             Loading training sessions...
                         </p>
+                    ) : isRestDay ? (
+                        <div className="rounded-lg border border-slate-700 bg-slate-800/50 p-4">
+                            <p className="text-sm font-medium text-text-main">
+                                Today is a Rest Day
+                            </p>
+
+                            <p className="mt-1 text-sm text-text-muted">
+                                Recovery is part of performance.
+                            </p>
+                        </div>
                     ) : trainingSessions.length === 0 ? (
                         <p className="text-sm text-text-muted">
                             No training sessions have been added for today.

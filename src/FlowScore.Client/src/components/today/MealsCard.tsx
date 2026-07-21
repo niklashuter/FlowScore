@@ -14,10 +14,12 @@ import {
 } from "../../api/mealsApi";
 
 type MealsCardProps = {
+    today: string;
     onMealsChanged: () => void;
 };
 
 function MealsCard({
+    today,
     onMealsChanged,
 }: MealsCardProps) {
     const [isMealModalOpen, setIsMealModalOpen] = useState(false);
@@ -30,14 +32,6 @@ function MealsCard({
     const [meals, setMeals] = useState<Meal[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState("");
-
-    const currentDate = new Date();
-
-    const today = [
-        currentDate.getFullYear(),
-        String(currentDate.getMonth() + 1).padStart(2, "0"),
-        String(currentDate.getDate()).padStart(2, "0"),
-    ].join("-");
 
     const mealTypeOptions = [
         { label: "Breakfast", value: "breakfast" },

@@ -18,4 +18,6 @@ public class FlowScoreDbContext : DbContext
 
     public DbSet<RecoveryEntry> RecoveryEntries =>
         Set<RecoveryEntry>();
+
+    public DbSet<TrainingDay> TrainingDays => Set<TrainingDay>();
 }
