@@ -32,6 +32,7 @@ function MealsCard({
     const [meals, setMeals] = useState<Meal[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState("");
+    const [isSavingMeal, setIsSavingMeal] = useState(false);
 
     const mealTypeOptions = [
         { label: "Breakfast", value: "breakfast" },
@@ -109,7 +110,12 @@ function MealsCard({
             date: today,
         };
 
+        setIsSavingMeal(true);
+
         try {
+            setIsMealModalOpen(false);
+            resetMealForm();
+
             if (editingMealId !== null) {
                 await updateMeal(editingMealId, mealRequest);
             } else {
@@ -118,11 +124,11 @@ function MealsCard({
 
             await loadMeals();
             onMealsChanged();
-            resetMealForm();
-            setIsMealModalOpen(false);
         } catch (error) {
             console.error("Failed to save meal:", error);
             setError("Unable to save meal.");
+        } finally {
+            setIsSavingMeal(false);
         }
     }
 
@@ -187,11 +193,23 @@ function MealsCard({
                 )}
 
                 <div className="grid gap-3 sm:grid-cols-2">
-                    {isLoading ? (
+                    {isSavingMeal && (
+                        <div className="rounded-xl bg-surface-light p-4">
+                            <p className="font-medium text-text-main">
+                                Analyzing meal...
+                            </p>
+
+                            <p className="mt-2 text-sm text-text-muted">
+                                This usually takes a few seconds.
+                            </p>
+                        </div>
+                    )}
+
+                    {isLoading && meals.length === 0 ? (
                         <p className="text-sm text-text-muted">
                             Loading meals...
                         </p>
-                    ) : meals.length === 0 ? (
+                    ) : meals.length === 0 && !isSavingMeal ? (
                         <p className="text-sm text-text-muted">
                             No meals have been added for today.
                         </p>
