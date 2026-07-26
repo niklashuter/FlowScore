@@ -9,8 +9,8 @@ import {
     
 const getNavLinkClass = ({ isActive }: { isActive: boolean }) =>
     isActive
-        ? "rounded-xl bg-cyan-500 px-4 py-3 font-medium text-slate-950 transition-all duration-200"
-        : "rounded-xl px-4 py-3 text-slate-300 transition-all duration-200 hover:bg-slate-800 hover:text-white";
+        ? "rounded-xl bg-cyan-500 px-5 py-3.5 font-medium text-slate-950 transition-all duration-200"
+        : "rounded-xl px-5 py-3.5 text-slate-300 transition-all duration-200 hover:bg-slate-800 hover:text-white";
     
 const navigationItems = [
         {
@@ -42,15 +42,16 @@ const navigationItems = [
 
 function Sidebar() {
     return (
-        <aside className="flex h-[calc(100vh-4rem)] w-64 flex-col border-r border-slate-800 bg-slate-950">
-            <div className="border-b border-slate-800 px-6 py-6">
-                <h2 className="text-2xl font-bold text-cyan-400">
-                    FlowScore
-                </h2>
-
-                <p className="mt-2 text-sm leading-relaxed text-slate-400">
-                    Balance creates performance.
-                </p>
+        <aside className="sticky top-24 flex h-[calc(100vh-6rem)] w-64 flex-col border-r border-slate-800 bg-slate-950">
+            <div className="border-b border-slate-800 px-6 py-8">
+                <div className="border-l-2 border-cyan-400 pl-4">
+                    <p className="text-lg font-medium leading-relaxed text-slate-300">
+                        Balance creates
+                        <span className="block font-semibold text-cyan-400">
+                            performance
+                        </span>
+                    </p>
+                </div>
             </div>
 
             <nav className="flex-1 px-4 py-6">
@@ -65,8 +66,10 @@ function Sidebar() {
                                 className={getNavLinkClass}
                             >
                                 <div className="flex items-center gap-3">
-                                    <Icon size={20} />
-                                    <span>{item.label}</span>
+                                    <Icon size={22} />
+                                    <span className="text-[15px]">
+                                        {item.label}
+                                    </span>
                                 </div>
                             </NavLink>
                         );
