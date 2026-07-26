@@ -27,4 +27,14 @@ public class FlowScoreController : ControllerBase
 
         return Ok(result);
     }
+
+    [HttpGet("{date}")]
+    public async Task<ActionResult<FlowScoreResult>> GetFlowScore(
+        DateOnly date
+    )
+    {
+        var result = await _calculator.CalculateAsync(date);
+
+        return Ok(result);
+    }
 }

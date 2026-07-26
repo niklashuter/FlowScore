@@ -9,4 +9,6 @@ public class FlowScoreResult
     public int TrainingScore { get; set; }
 
     public int FlowScore { get; set; }
+
+    public string BalanceValue { get; set; } = string.Empty;
 }

@@ -6,23 +6,74 @@ import ScoreSummaryCard from "../../components/flowscore/ScoreSummaryCard";
 import Badge from "../../components/ui/Badge";
 import QuickStat from "../../components/flowscore/QuickStat";
 import FlowScoreHistoryCard from "../../components/flowscore/FlowScoreHistoryCard";
+import FlowScoreExplanation from "../../components/flowscore/FlowScoreExplanation";
+import { useEffect, useState } from "react";
+import {
+    getFlowScore,
+    type FlowScoreResult,
+} from "../../api/flowScoreApi";
+import {
+    getHistory,
+    type HistoryDayResponse,
+} from "../../api/historyApi";
 
 function DashboardPage(){
+    const [scores, setScores] =
+        useState<FlowScoreResult | null>(null);
+
+    const [isLoading, setIsLoading] = useState(true);
+
+    const [error, setError] = useState("");
+
+    const [history, setHistory] =
+    useState<HistoryDayResponse[]>([]);
+
+    useEffect(() => {
+        async function loadFlowScore() {
+            setIsLoading(true);
+            setError("");
+
+            try {
+                const loadedScores =
+                    await getFlowScore();
+
+                setScores(loadedScores);
+
+                const loadedHistory =
+                    await getHistory(7);
+
+                setHistory(loadedHistory);
+            } catch (error) {
+                console.error(
+                    "Failed to load dashboard FlowScore:",
+                    error
+                );
+
+                setError(
+                    "Unable to load today's FlowScore."
+                );
+            } finally {
+                setIsLoading(false);
+            }
+        }
+
+        loadFlowScore();
+    }, []);
     
     const scoreEntries = [
         {
             label: "Recovery",
-            value: 82,
+            value: scores?.recoveryScore ?? 0,
             description: "Sleep and recovery readiness.",
         },
         {
             label: "Nutrition",
-            value: 75,
+            value: scores?.nutritionScore ?? 0,
             description: "Fuel quality and daily consistency.",
         },
         {
             label: "Training",
-            value: 91,
+            value: scores?.trainingScore ?? 0,
             description: "Movement, intensity and activity level.",
         },
     ];
@@ -39,6 +90,8 @@ function DashboardPage(){
         (score) => score.label === "Training"
     )!.value;
 
+    const flowScore = scores?.flowScore ?? 0;
+
     const strongestArea = scoreEntries.reduce((highest, current) =>
         current.value > highest.value ? current : highest
     );
@@ -50,7 +103,7 @@ function DashboardPage(){
     const quickStats = [
         {
             label: "FlowScore",
-            value: Math.round((recovery + nutrition + training) / 3),
+            value: flowScore,
         },
         {
             label: "Best Area",
@@ -62,18 +115,8 @@ function DashboardPage(){
         },
         {
             label: "Balance",
-            value: "Good",
+            value: scores?.balanceValue ?? "-",
         },
-    ];
-
-    const historyData = [
-        { day: "Mon", score: 72 },
-        { day: "Tue", score: 76 },
-        { day: "Wed", score: 70 },
-        { day: "Thu", score: 81 },
-        { day: "Fri", score: 84 },
-        { day: "Sat", score: 78 },
-        { day: "Sun", score: 83 },
     ];
 
     const formattedDate = new Intl.DateTimeFormat("en", {
@@ -81,6 +124,15 @@ function DashboardPage(){
         month: "short",
         day: "numeric",
     }).format(new Date());
+
+    const historyData = [...history]
+        .reverse()
+        .map((day) => ({
+            day: new Intl.DateTimeFormat("en", {
+                weekday: "short",
+            }).format(new Date(day.date)),
+            score: day.flowScore,
+        }));
 
     return (
         <div className="space-y-6">
@@ -99,7 +151,10 @@ function DashboardPage(){
                         recovery={recovery}
                         nutrition={nutrition}
                         training={training}
+                        flowScore={flowScore}
                     />
+
+                    <FlowScoreExplanation />
                 </Card> 
 
                 <Card>

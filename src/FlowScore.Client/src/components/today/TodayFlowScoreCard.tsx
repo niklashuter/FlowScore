@@ -1,8 +1,9 @@
 import FlowScoreTriangle from "../flowscore/FlowScoreTriangle";
 import Card from "../ui/Card";
 import { useEffect, useState } from "react";
+import FlowScoreExplanation from "../flowscore/FlowScoreExplanation";
 import {
-    getTodayFlowScore,
+    getFlowScore,
     type FlowScoreResult,
 } from "../../api/flowScoreApi";
 
@@ -28,7 +29,7 @@ function TodayFlowScoreCard({
 
             try {
                 const loadedScores =
-                    await getTodayFlowScore();
+                    await getFlowScore();
 
                 setScores(loadedScores);
             } catch (error) {
@@ -81,7 +82,10 @@ function TodayFlowScoreCard({
                     recovery={scores?.recoveryScore ?? 0}
                     nutrition={scores?.nutritionScore ?? 0}
                     training={scores?.trainingScore ?? 0}
+                    flowScore={scores?.flowScore ?? 0}
                 />
+
+                <FlowScoreExplanation />
             </div>
         </Card>
     );

@@ -1,3 +1,5 @@
+import { getScoreColor } from "../../utils/scoreColor";
+
 type Point = {
     x: number;
     y: number;
@@ -12,22 +14,6 @@ type TriangleSegmentProps = {
     score: number;
 };
 
-function getSegmentFillClass(score: number) {
-    if (score < 60) {
-        return "fill-red-500/55";
-    }
-
-    if (score < 70) {
-        return "fill-orange-500/55";
-    }
-
-    if (score < 80) {
-        return "fill-lime-400/55";
-    }
-
-    return "fill-green-600/55";
-}
-
 function TriangleSegment({
     points,
     title,
@@ -36,14 +22,14 @@ function TriangleSegment({
     valuePosition,
     score,
 }: TriangleSegmentProps) {
-    const fillClass = getSegmentFillClass(score);
+    const scoreColor = getScoreColor(score);
     const segmentDividerColor = "#0f172a";
 
     return (
         <>
             <polygon
                 points={points}
-                className={fillClass}
+                className={scoreColor.fill}
                 stroke={segmentDividerColor}
                 strokeWidth="4"
                 strokeLinejoin="round"

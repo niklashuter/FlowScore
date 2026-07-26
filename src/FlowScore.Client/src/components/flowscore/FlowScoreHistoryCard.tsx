@@ -1,4 +1,4 @@
-type HistoryPoint = {
+export type HistoryPoint = {
     day: string;
     score: number;
 };
@@ -25,8 +25,11 @@ function getYPosition(score: number) {
 function calculateChartPoints(data: HistoryPoint[]) {
     return data.map((point, index) => {
         const x =
-            padding +
-            (index / (data.length - 1)) * (chartWidth - padding * 2);
+            data.length === 1
+                ? chartWidth / 2
+                : padding +
+                (index / (data.length - 1)) *
+                    (chartWidth - padding * 2);
 
         const y = getYPosition(point.score);
 
@@ -38,7 +41,23 @@ function calculateChartPoints(data: HistoryPoint[]) {
     });
 }
 
-function FlowScoreHistoryCard({ data }: FlowScoreHistoryCardProps) {
+function FlowScoreHistoryCard({
+    data,
+}: FlowScoreHistoryCardProps) {
+    if (data.length === 0) {
+        return (
+            <div className="rounded-2xl border border-border bg-surface p-6">
+                <h2 className="text-xl font-semibold text-text-main">
+                    FlowScore History
+                </h2>
+
+                <p className="mt-2 text-sm text-text-muted">
+                    No FlowScore history is available yet.
+                </p>
+            </div>
+        );
+    }
+
     const chartPoints = calculateChartPoints(data);
     const polylinePoints = chartPoints
         .map((point) => `${point.x},${point.y}`)

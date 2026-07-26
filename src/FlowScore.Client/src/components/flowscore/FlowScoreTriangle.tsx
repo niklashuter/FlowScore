@@ -5,6 +5,8 @@ type FlowScoreTriangleProps = {
     recovery: number;
     nutrition: number;
     training: number;
+    flowScore: number;
+    showContainer?: boolean;
 };
 
 type Point = {
@@ -20,9 +22,9 @@ function FlowScoreTriangle({
     recovery,
     nutrition,
     training,
+    flowScore,
+    showContainer = true,
 }: FlowScoreTriangleProps) {
-    const flowScore = Math.round((recovery + nutrition + training) / 3);
-
     const triangleTopY = 30;
     const triangleMiddleY = 145;
     const triangleBottomY = 255;
@@ -102,55 +104,60 @@ function FlowScoreTriangle({
         x: bottomCenter.x,
         y: centerLeft.y + 55,
     };
-    return(
+
+    const triangle = (
+        <svg
+            viewBox="0 0 320 280"
+            className="h-96 w-full"
+            role="img"
+            aria-label="FlowScore balance triangle"
+        >
+            {/* Recovery triangle */}
+            <TriangleSegment
+                points={formatPoints(top, centerLeft, centerRight)}
+                title="Recovery"
+                value={recovery}
+                titlePosition={recoveryTitlePosition}
+                valuePosition={recoveryValuePosition}
+                score={recovery}
+            />
+
+            {/* Nutrition triangle */}
+            <TriangleSegment
+                points={formatPoints(centerLeft, bottomLeft, bottomCenter)}
+                title="Nutrition"
+                value={nutrition}
+                titlePosition={nutritionTitlePosition}
+                valuePosition={nutritionValuePosition}
+                score={nutrition}
+            />
+
+            {/* Training triangle */}
+            <TriangleSegment
+                points={formatPoints(centerRight, bottomCenter, bottomRight)}
+                title="Training"
+                value={training}
+                titlePosition={trainingTitlePosition}
+                valuePosition={trainingValuePosition}
+                score={training}
+            />
+
+            {/* FlowScore triangle */}
+            <FlowScoreCenter
+                points={formatPoints(centerLeft, centerRight, bottomCenter)}
+                score={flowScore}
+                labelPosition={flowScoreLabelPosition}
+                scorePosition={flowScoreValuePosition}
+            />
+        </svg>
+    );
+
+    return showContainer ? (
         <div className="rounded-2xl border border-border bg-surface p-6">
-            <svg
-                viewBox="0 0 320 280"
-                className="h-96 w-full"
-                role="img"
-                aria-label="FlowScore balance triangle"
-            >
-
-                {/* Recovery triangle */}
-                <TriangleSegment
-                    points={formatPoints(top, centerLeft, centerRight)}
-                    title="Recovery"
-                    value={recovery}
-                    titlePosition={recoveryTitlePosition}
-                    valuePosition={recoveryValuePosition}
-                    score={recovery}
-                />
-
-
-                {/* Nutrition triangle */}
-                <TriangleSegment
-                    points={formatPoints(centerLeft, bottomLeft, bottomCenter)}
-                    title="Nutrition"
-                    value={nutrition}
-                    titlePosition={nutritionTitlePosition}
-                    valuePosition={nutritionValuePosition}
-                    score={nutrition}
-                />
-
-                {/* Training triangle */}
-                <TriangleSegment
-                    points={formatPoints(centerRight, bottomCenter, bottomRight)}
-                    title="Training"
-                    value={training}
-                    titlePosition={trainingTitlePosition}
-                    valuePosition={trainingValuePosition}
-                    score={training}
-                />
-
-                {/* FlowScore triangle */}
-                <FlowScoreCenter
-                    points={formatPoints(centerLeft, centerRight, bottomCenter)}
-                    score={flowScore}
-                    labelPosition={flowScoreLabelPosition}
-                    scorePosition={flowScoreValuePosition}
-                />
-            </svg>
+            {triangle}
         </div>
+    ) : (
+        triangle
     );
 }
 

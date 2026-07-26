@@ -24,11 +24,12 @@ builder.Services.AddCors(options =>
 
 // Add services to the container.
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
-builder.Services.AddScoped<FlowScoreCalculator>();
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+builder.Services.AddScoped<FlowScoreCalculator>();
 builder.Services.AddScoped<MealNutritionAnalyzer>();
+builder.Services.AddScoped<HistoryService>();
 
 var app = builder.Build();
 

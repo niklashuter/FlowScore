@@ -33,12 +33,20 @@ public class FlowScoreCalculator
             trainingScore
         );
 
+        var balanceValue = CalculateBalanceValue(
+            recoveryScore,
+            nutritionScore,
+            trainingScore
+        );
+
         return new FlowScoreResult
         {
             RecoveryScore = recoveryScore,
             NutritionScore = nutritionScore,
             TrainingScore = trainingScore,
-            FlowScore = flowScore
+            FlowScore = flowScore,
+            BalanceValue = balanceValue
+            
         };
     }
 
@@ -279,7 +287,7 @@ public class FlowScoreCalculator
         return (int)Math.Round(sessionScores.Average());
     }
 
-    private static int CalculateTrainingSessionScore(
+    public static int CalculateTrainingSessionScore(
         TrainingSession trainingSession
     )
     {
@@ -343,7 +351,7 @@ public class FlowScoreCalculator
                 <= 150 => 55,
                 _ => 35
             },
-            
+
             _ => 0
         };
     }
@@ -373,6 +381,45 @@ public class FlowScoreCalculator
         int trainingScore
     )
     {
-        return 0;
+        var scores = new[]
+        {
+            recoveryScore,
+            nutritionScore,
+            trainingScore
+        };
+
+        Array.Sort(scores);
+
+        var flowScore =
+            scores[0] * 0.40 +
+            scores[1] * 0.30 +
+            scores[2] * 0.30;
+
+        return (int)Math.Round(flowScore);
+    }
+
+    private static string CalculateBalanceValue(
+        int recoveryScore,
+        int nutritionScore,
+        int trainingScore
+    )
+    {
+        var highestScore = Math.Max(recoveryScore,
+            Math.Min(nutritionScore, trainingScore)
+        );
+
+        var lowestScore = Math.Min(recoveryScore,
+            Math.Min(nutritionScore, trainingScore)
+        );
+
+        var difference = highestScore - lowestScore;
+
+        return difference switch
+        {
+            <= 10 => "Excellent",
+            <= 20 => "Good",
+            <= 35 => "Fair",
+            _ => "Poor",
+        };
     }
 }
