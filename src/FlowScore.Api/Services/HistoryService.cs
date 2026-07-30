@@ -18,22 +18,28 @@ public class HistoryService
     }
 
     public async Task<List<HistoryDayResponse>> GetHistoryAsync(
+        string userId,
         int? days = null
     )
     {
         var recoveryDates = await _dbContext.RecoveryEntries
+            .Where(entry => entry.UserId == userId)
             .Select(entry => entry.Date)
             .ToListAsync();
 
         var mealDates = await _dbContext.Meals
+            .Where(meal => meal.UserId == userId)
             .Select(meal => meal.Date)
             .ToListAsync();
 
         var trainingSessionDates = await _dbContext.TrainingSessions
+            .Where(session => session.UserId == userId)
             .Select(session => session.Date)
             .ToListAsync();
 
         var trainingDayDates = await _dbContext.TrainingDays
+            .Where(trainingDay =>
+                trainingDay.UserId == userId)
             .Select(trainingDay => trainingDay.Date)
             .ToListAsync();
 
@@ -59,7 +65,11 @@ public class HistoryService
 
         foreach (var date in dates)
         {
-            var flowScore = await _flowScoreCalculator.CalculateAsync(date);
+            var flowScore =
+                await _flowScoreCalculator.CalculateAsync(
+                    date,
+                    userId
+                );
 
             history.Add(new HistoryDayResponse
             {
@@ -76,23 +86,32 @@ public class HistoryService
     }
 
     public async Task<HistoryDayDetailsResponse?> GetDayDetailsAsync(
-        DateOnly date
+        DateOnly date,
+        string userId
     )
     {
         var recoveryEntry = await _dbContext.RecoveryEntries
-            .SingleOrDefaultAsync(entry => entry.Date == date);
+            .SingleOrDefaultAsync(entry =>
+                entry.UserId == userId &&
+                entry.Date == date);
 
         var meals = await _dbContext.Meals
-            .Where(meal => meal.Date == date)
+            .Where(meal =>
+                meal.UserId == userId &&
+                meal.Date == date)
             .OrderBy(meal => meal.Time)
             .ToListAsync();
 
         var trainingSessions = await _dbContext.TrainingSessions
-            .Where(session => session.Date == date)
+            .Where(session =>
+                session.UserId == userId &&
+                session.Date == date)
             .ToListAsync();
 
         var trainingDay = await _dbContext.TrainingDays
-            .SingleOrDefaultAsync(day => day.Date == date);
+            .SingleOrDefaultAsync(day =>
+                day.UserId == userId &&
+                day.Date == date);
 
         var hasData =
             recoveryEntry is not null ||
@@ -106,7 +125,10 @@ public class HistoryService
         }
 
         var flowScore =
-            await _flowScoreCalculator.CalculateAsync(date);
+            await _flowScoreCalculator.CalculateAsync(
+                date,
+                userId
+            );
 
         return new HistoryDayDetailsResponse
         {

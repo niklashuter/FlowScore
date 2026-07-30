@@ -13,19 +13,29 @@ public class FlowScoreCalculator
         _dbContext = dbContext;
     }
 
-    public async Task<FlowScoreResult> CalculateAsync(DateOnly date)
+    public async Task<FlowScoreResult> CalculateAsync(
+    DateOnly date,
+    string userId)
     {
         var recoveryEntry = await _dbContext.RecoveryEntries
-            .SingleOrDefaultAsync(entry => entry.Date == date);
+            .SingleOrDefaultAsync(entry =>
+                entry.UserId == userId &&
+                entry.Date == date);
 
         var recoveryScore =
             CalculateRecoveryScore(recoveryEntry);
 
         var nutritionScore =
-            await CalculateNutritionScoreAsync(date);
+            await CalculateNutritionScoreAsync(
+                date,
+                userId
+            );
 
         var trainingScore =
-            await CalculateTrainingScoreAsync(date);
+            await CalculateTrainingScoreAsync(
+                date,
+                userId
+            );
 
         var flowScore = CalculateFlowScore(
             recoveryScore,
@@ -142,11 +152,14 @@ public class FlowScoreCalculator
     }
 
     private async Task<int> CalculateNutritionScoreAsync(
-        DateOnly date
+        DateOnly date,
+        string userId
     )
     {
         var meals = await _dbContext.Meals
-            .Where(meal => meal.Date == date)
+            .Where(meal =>
+                meal.UserId == userId &&
+                meal.Date == date)
             .ToListAsync();
 
         var scoredMeals = meals
@@ -261,11 +274,14 @@ public class FlowScoreCalculator
     }
 
     private async Task<int> CalculateTrainingScoreAsync(
-        DateOnly date
+        DateOnly date,
+        string userId
     )
     {
         var trainingDay = await _dbContext.TrainingDays
-            .SingleOrDefaultAsync(day => day.Date == date);
+            .SingleOrDefaultAsync(day =>
+                day.UserId == userId &&
+                day.Date == date);
 
         if (trainingDay?.IsRestDay == true)
         {
@@ -273,7 +289,9 @@ public class FlowScoreCalculator
         }
 
         var trainingSessions = await _dbContext.TrainingSessions
-            .Where(session => session.Date == date)
+            .Where(session =>
+                session.UserId == userId &&
+                session.Date == date)
             .ToListAsync();
 
         if (trainingSessions.Count == 0)

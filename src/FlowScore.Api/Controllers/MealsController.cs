@@ -3,9 +3,13 @@ using FlowScore.Api.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using FlowScore.Api.Services;
+using System.Security.Claims;
+using Microsoft.AspNetCore.Authorization;
+using FlowScore.Api.Contracts.Meals;
 
 namespace FlowScore.Api.Controllers;
 
+[Authorize]
 [ApiController]
 [Route("api/[controller]")]
 public class MealsController : ControllerBase
@@ -23,11 +27,29 @@ public class MealsController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<ActionResult<IEnumerable<Meal>>> GetMeals()
+    public async Task<ActionResult<IEnumerable<MealResponse>>> GetMeals()
     {
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+        if (userId is null)
+        {
+            return Unauthorized();
+        }
+
         var meals = await _dbContext.Meals
-            .OrderBy(meal => meal.Date)
-            .ThenBy(meal => meal.Time)
+            .Where(meal => meal.UserId == userId)
+            .OrderByDescending(meal => meal.Date)
+            .ThenByDescending(meal => meal.Time)
+            .Select(meal => new MealResponse
+            {
+                Id = meal.Id,
+                Type = meal.Type,
+                Description = meal.Description,
+                Time = meal.Time,
+                Date = meal.Date,
+                NutritionScore = meal.NutritionScore,
+                NutritionFeedback = meal.NutritionFeedback
+            })
             .ToListAsync();
 
         return Ok(meals);
@@ -38,8 +60,17 @@ public class MealsController : ControllerBase
         DateOnly date
     )
     {
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+        if (userId is null)
+        {
+            return Unauthorized();
+        }
+
         var meals = await _dbContext.Meals
-            .Where(meal => meal.Date == date)
+            .Where(meal =>
+                meal.UserId == userId &&
+                meal.Date == date)
             .OrderBy(meal => meal.Time)
             .ToListAsync();
 
@@ -47,30 +78,80 @@ public class MealsController : ControllerBase
     }
 
     [HttpPost]
-    public async Task<ActionResult<Meal>> CreateMeal(Meal meal)
+    public async Task<ActionResult<MealResponse>> CreateMeal(
+        CreateMealRequest request)
     {
+        var userId = User.FindFirstValue(
+            ClaimTypes.NameIdentifier
+        );
+
+        if (userId is null)
+        {
+            return Unauthorized();
+        }
+
+        var meal = new Meal
+        {
+            Type = request.Type,
+            Description = request.Description,
+            Time = request.Time,
+            Date = request.Date,
+            UserId = userId
+        };
+
         var analysis = await _mealNutritionAnalyzer.AnalyzeMealAsync(
-            meal.Description,
-            meal.Type
+            request.Description,
+            request.Type
         );
 
         meal.NutritionScore = analysis.NutritionScore;
         meal.NutritionFeedback = analysis.Feedback;
 
         _dbContext.Meals.Add(meal);
+
         await _dbContext.SaveChangesAsync();
+
+        var response = new MealResponse
+        {
+            Id = meal.Id,
+            Type = meal.Type,
+            Description = meal.Description,
+            Time = meal.Time,
+            Date = meal.Date,
+            NutritionScore = meal.NutritionScore,
+            NutritionFeedback = meal.NutritionFeedback
+        };
 
         return CreatedAtAction(
             nameof(GetMealById),
             new { id = meal.Id },
-            meal
+            response
         );
     }
 
-    [HttpGet("{id:int}")]
-    public async Task<ActionResult<Meal>> GetMealById(int id)
+    [HttpGet("{id}")]
+    public async Task<ActionResult<MealResponse>> GetMealById(int id)
     {
-        var meal = await _dbContext.Meals.FindAsync(id);
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+        if (userId is null)
+        {
+            return Unauthorized();
+        }
+
+        var meal = await _dbContext.Meals
+            .Where(meal => meal.Id == id && meal.UserId == userId)
+            .Select(meal => new MealResponse
+            {
+                Id = meal.Id,
+                Type = meal.Type,
+                Description = meal.Description,
+                Time = meal.Time,
+                Date = meal.Date,
+                NutritionScore = meal.NutritionScore,
+                NutritionFeedback = meal.NutritionFeedback
+            })
+            .SingleOrDefaultAsync();
 
         if (meal is null)
         {
@@ -80,55 +161,64 @@ public class MealsController : ControllerBase
         return Ok(meal);
     }
 
-    [HttpPut("{id:int}")]
-    public async Task<IActionResult> UpdateMeal(int id, Meal updatedMeal)
+    [HttpPut("{id}")]
+    public async Task<IActionResult> UpdateMeal(
+        int id,
+        UpdateMealRequest request)
     {
-        var existingMeal = await _dbContext.Meals.FindAsync(id);
+        var userId = User.FindFirstValue(
+            ClaimTypes.NameIdentifier
+        );
 
-        if (existingMeal is null)
+        if (userId is null)
+        {
+            return Unauthorized();
+        }
+
+        var meal = await _dbContext.Meals.SingleOrDefaultAsync(
+            meal => meal.Id == id &&
+                    meal.UserId == userId
+        );
+
+        if (meal is null)
         {
             return NotFound();
         }
 
-        var descriptionChanged =
-            !string.Equals(
-                existingMeal.Description,
-                updatedMeal.Description,
-                StringComparison.Ordinal
-            );
+        meal.Type = request.Type;
+        meal.Description = request.Description;
+        meal.Time = request.Time;
+        meal.Date = request.Date;
 
-        var typeChanged =
-            !string.Equals(
-                existingMeal.Type,
-                updatedMeal.Type,
-                StringComparison.Ordinal
-            );
+        var analysis = await _mealNutritionAnalyzer.AnalyzeMealAsync(
+            meal.Description,
+            meal.Type
+        );
 
-        if (descriptionChanged || typeChanged)
-        {
-            var analysis = await _mealNutritionAnalyzer.AnalyzeMealAsync(
-                updatedMeal.Description,
-                updatedMeal.Type
-            );
-
-            existingMeal.NutritionScore = analysis.NutritionScore;
-            existingMeal.NutritionFeedback = analysis.Feedback;
-        }
-
-        existingMeal.Type = updatedMeal.Type;
-        existingMeal.Description = updatedMeal.Description;
-        existingMeal.Time = updatedMeal.Time;
-        existingMeal.Date = updatedMeal.Date;
+        meal.NutritionScore = analysis.NutritionScore;
+        meal.NutritionFeedback = analysis.Feedback;
 
         await _dbContext.SaveChangesAsync();
 
         return NoContent();
     }
 
-    [HttpDelete("{id:int}")]
+    [HttpDelete("{id}")]
     public async Task<IActionResult> DeleteMeal(int id)
     {
-        var meal = await _dbContext.Meals.FindAsync(id);
+        var userId = User.FindFirstValue(
+            ClaimTypes.NameIdentifier
+        );
+
+        if (userId is null)
+        {
+            return Unauthorized();
+        }
+
+        var meal = await _dbContext.Meals.SingleOrDefaultAsync(
+            meal => meal.Id == id &&
+                    meal.UserId == userId
+        );
 
         if (meal is null)
         {
@@ -136,6 +226,7 @@ public class MealsController : ControllerBase
         }
 
         _dbContext.Meals.Remove(meal);
+
         await _dbContext.SaveChangesAsync();
 
         return NoContent();

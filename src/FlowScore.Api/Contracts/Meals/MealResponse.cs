@@ -1,6 +1,6 @@
-namespace FlowScore.Api.Models;
+namespace FlowScore.Api.Contracts.Meals;
 
-public class Meal
+public class MealResponse
 {
     public int Id { get; set; }
 
@@ -15,8 +15,4 @@ public class Meal
     public int? NutritionScore { get; set; }
 
     public string? NutritionFeedback { get; set; }
-
-    public string UserId { get; set; } = string.Empty;
-
-    public ApplicationUser User { get; set; } = null!;
 }

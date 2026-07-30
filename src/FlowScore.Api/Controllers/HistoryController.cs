@@ -1,9 +1,12 @@
 using FlowScore.Api.DTOs;
 using FlowScore.Api.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 namespace FlowScore.Api.Controllers;
 
+[Authorize]
 [ApiController]
 [Route("api/[controller]")]
 public class HistoryController : ControllerBase
@@ -20,6 +23,15 @@ public class HistoryController : ControllerBase
         [FromQuery] int? days
     )
     {
+        var userId = User.FindFirstValue(
+            ClaimTypes.NameIdentifier
+        );
+
+        if (userId is null)
+        {
+            return Unauthorized();
+        }
+
         if (days.HasValue && days.Value <= 0)
         {
             return BadRequest(
@@ -27,7 +39,10 @@ public class HistoryController : ControllerBase
             );
         }
 
-        var history = await _historyService.GetHistoryAsync(days);
+        var history = await _historyService.GetHistoryAsync(
+            userId,
+            days
+        );
 
         return Ok(history);
     }
@@ -36,8 +51,20 @@ public class HistoryController : ControllerBase
     public async Task<ActionResult<HistoryDayDetailsResponse>>
         GetHistoryDayDetails(DateOnly date)
     {
+        var userId = User.FindFirstValue(
+            ClaimTypes.NameIdentifier
+        );
+
+        if (userId is null)
+        {
+            return Unauthorized();
+        }
+
         var details =
-            await _historyService.GetDayDetailsAsync(date);
+            await _historyService.GetDayDetailsAsync(
+                date,
+                userId
+            );
 
         if (details is null)
         {
@@ -48,4 +75,4 @@ public class HistoryController : ControllerBase
 
         return Ok(details);
     }
-    }
+}

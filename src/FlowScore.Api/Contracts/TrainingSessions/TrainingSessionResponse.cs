@@ -1,6 +1,6 @@
-namespace FlowScore.Api.Models;
+namespace FlowScore.Api.Contracts.TrainingSessions;
 
-public class TrainingSession
+public class TrainingSessionResponse
 {
     public int Id { get; set; }
 
@@ -11,8 +11,4 @@ public class TrainingSession
     public string Intensity { get; set; } = string.Empty;
 
     public DateOnly Date { get; set; }
-
-    public string UserId { get; set; } = string.Empty;
-
-    public ApplicationUser User { get; set; } = null!;
 }

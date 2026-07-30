@@ -1,6 +1,6 @@
-namespace FlowScore.Api.Models;
+namespace FlowScore.Api.Contracts.RecoveryEntries;
 
-public class RecoveryEntry
+public class RecoveryEntryResponse
 {
     public int Id { get; set; }
 
@@ -11,8 +11,4 @@ public class RecoveryEntry
     public string MorningFeeling { get; set; } = string.Empty;
 
     public DateOnly Date { get; set; }
-
-    public string UserId { get; set; } = string.Empty;
-
-    public ApplicationUser User { get; set; } = null!;
 }

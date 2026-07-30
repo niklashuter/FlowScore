@@ -2,9 +2,13 @@ using FlowScore.Api.Data;
 using FlowScore.Api.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.Security.Claims;
+using Microsoft.AspNetCore.Authorization;
+using FlowScore.Api.Contracts.TrainingDays;
 
 namespace FlowScore.Api.Controllers;
 
+[Authorize]
 [ApiController]
 [Route("api/[controller]")]
 public class TrainingDaysController : ControllerBase
@@ -17,12 +21,29 @@ public class TrainingDaysController : ControllerBase
     }
 
     [HttpGet("by-date/{date}")]
-    public async Task<ActionResult<TrainingDay>> GetTrainingDayByDate(
-        DateOnly date
-    )
+    public async Task<ActionResult<TrainingDayResponse>> GetTrainingDayByDate(
+        DateOnly date)
     {
+        var userId = User.FindFirstValue(
+            ClaimTypes.NameIdentifier
+        );
+
+        if (userId is null)
+        {
+            return Unauthorized();
+        }
+
         var trainingDay = await _dbContext.TrainingDays
-            .SingleOrDefaultAsync(day => day.Date == date);
+            .Where(day =>
+                day.UserId == userId &&
+                day.Date == date)
+            .Select(day => new TrainingDayResponse
+            {
+                Id = day.Id,
+                Date = day.Date,
+                IsRestDay = day.IsRestDay
+            })
+            .SingleOrDefaultAsync();
 
         if (trainingDay is null)
         {
@@ -33,18 +54,29 @@ public class TrainingDaysController : ControllerBase
     }
 
     [HttpPut("by-date/{date}")]
-    public async Task<ActionResult<TrainingDay>> UpdateTrainingDay(
+    public async Task<ActionResult<TrainingDayResponse>> UpdateTrainingDay(
         DateOnly date,
-        UpdateTrainingDayRequest request
-    )
+        UpdateTrainingDayRequest request)
     {
+        var userId = User.FindFirstValue(
+            ClaimTypes.NameIdentifier
+        );
+
+        if (userId is null)
+        {
+            return Unauthorized();
+        }
+
         var trainingDay = await _dbContext.TrainingDays
-            .SingleOrDefaultAsync(day => day.Date == date);
+            .SingleOrDefaultAsync(day =>
+                day.UserId == userId &&
+                day.Date == date);
 
         if (trainingDay is null)
         {
             trainingDay = new TrainingDay
             {
+                UserId = userId,
                 Date = date,
                 IsRestDay = request.IsRestDay
             };
@@ -60,7 +92,9 @@ public class TrainingDaysController : ControllerBase
         {
             var existingTrainingSessions =
                 await _dbContext.TrainingSessions
-                    .Where(session => session.Date == date)
+                    .Where(session =>
+                        session.UserId == userId &&
+                        session.Date == date)
                     .ToListAsync();
 
             _dbContext.TrainingSessions.RemoveRange(
@@ -70,6 +104,13 @@ public class TrainingDaysController : ControllerBase
 
         await _dbContext.SaveChangesAsync();
 
-        return Ok(trainingDay);
+        var response = new TrainingDayResponse
+        {
+            Id = trainingDay.Id,
+            Date = trainingDay.Date,
+            IsRestDay = trainingDay.IsRestDay
+        };
+
+        return Ok(response);
     }
 }

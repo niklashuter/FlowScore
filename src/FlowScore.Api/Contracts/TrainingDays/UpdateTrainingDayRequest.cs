@@ -1,4 +1,4 @@
-namespace FlowScore.Api.Models;
+namespace FlowScore.Api.Contracts.TrainingDays;
 
 public class UpdateTrainingDayRequest
 {

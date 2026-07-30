@@ -1,10 +1,14 @@
+using System.Security.Claims;
+using FlowScore.Api.Contracts.RecoveryEntries;
 using FlowScore.Api.Data;
 using FlowScore.Api.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
 namespace FlowScore.Api.Controllers;
 
+[Authorize]
 [ApiController]
 [Route("api/[controller]")]
 public class RecoveryEntriesController : ControllerBase
@@ -17,22 +21,56 @@ public class RecoveryEntriesController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<ActionResult<IEnumerable<RecoveryEntry>>> GetRecoveryEntries()
+    public async Task<ActionResult<IEnumerable<RecoveryEntryResponse>>>
+        GetRecoveryEntries()
     {
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+        if (userId is null)
+        {
+            return Unauthorized();
+        }
+
         var recoveryEntries = await _dbContext.RecoveryEntries
+            .Where(entry => entry.UserId == userId)
             .OrderBy(entry => entry.Date)
+            .Select(entry => new RecoveryEntryResponse
+            {
+                Id = entry.Id,
+                SleepDurationHours = entry.SleepDurationHours,
+                SleepQuality = entry.SleepQuality,
+                MorningFeeling = entry.MorningFeeling,
+                Date = entry.Date
+            })
             .ToListAsync();
 
         return Ok(recoveryEntries);
     }
 
     [HttpGet("by-date/{date}")]
-    public async Task<ActionResult<RecoveryEntry>> GetRecoveryEntryByDate(
-        DateOnly date
-    )
+    public async Task<ActionResult<RecoveryEntryResponse>>
+        GetRecoveryEntryByDate(DateOnly date)
     {
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+        if (userId is null)
+        {
+            return Unauthorized();
+        }
+
         var recoveryEntry = await _dbContext.RecoveryEntries
-            .SingleOrDefaultAsync(entry => entry.Date == date);
+            .Where(entry =>
+                entry.UserId == userId &&
+                entry.Date == date)
+            .Select(entry => new RecoveryEntryResponse
+            {
+                Id = entry.Id,
+                SleepDurationHours = entry.SleepDurationHours,
+                SleepQuality = entry.SleepQuality,
+                MorningFeeling = entry.MorningFeeling,
+                Date = entry.Date
+            })
+            .SingleOrDefaultAsync();
 
         if (recoveryEntry is null)
         {
@@ -43,9 +81,29 @@ public class RecoveryEntriesController : ControllerBase
     }
 
     [HttpGet("{id:int}")]
-    public async Task<ActionResult<RecoveryEntry>> GetRecoveryEntryById(int id)
+    public async Task<ActionResult<RecoveryEntryResponse>>
+        GetRecoveryEntryById(int id)
     {
-        var recoveryEntry = await _dbContext.RecoveryEntries.FindAsync(id);
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+        if (userId is null)
+        {
+            return Unauthorized();
+        }
+
+        var recoveryEntry = await _dbContext.RecoveryEntries
+            .Where(entry =>
+                entry.Id == id &&
+                entry.UserId == userId)
+            .Select(entry => new RecoveryEntryResponse
+            {
+                Id = entry.Id,
+                SleepDurationHours = entry.SleepDurationHours,
+                SleepQuality = entry.SleepQuality,
+                MorningFeeling = entry.MorningFeeling,
+                Date = entry.Date
+            })
+            .SingleOrDefaultAsync();
 
         if (recoveryEntry is null)
         {
@@ -56,14 +114,20 @@ public class RecoveryEntriesController : ControllerBase
     }
 
     [HttpPost]
-    public async Task<ActionResult<RecoveryEntry>> CreateRecoveryEntry(
-        RecoveryEntry recoveryEntry
-    )
+    public async Task<ActionResult<RecoveryEntryResponse>>
+        CreateRecoveryEntry(CreateRecoveryEntryRequest request)
     {
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+        if (userId is null)
+        {
+            return Unauthorized();
+        }
+
         var entryForDateAlreadyExists =
-            await _dbContext.RecoveryEntries.AnyAsync(
-                entry => entry.Date == recoveryEntry.Date
-            );
+            await _dbContext.RecoveryEntries.AnyAsync(entry =>
+                entry.UserId == userId &&
+                entry.Date == request.Date);
 
         if (entryForDateAlreadyExists)
         {
@@ -72,24 +136,45 @@ public class RecoveryEntriesController : ControllerBase
             );
         }
 
+        var recoveryEntry = new RecoveryEntry
+        {
+            SleepDurationHours = request.SleepDurationHours,
+            SleepQuality = request.SleepQuality,
+            MorningFeeling = request.MorningFeeling,
+            Date = request.Date,
+            UserId = userId
+        };
+
         _dbContext.RecoveryEntries.Add(recoveryEntry);
         await _dbContext.SaveChangesAsync();
+
+        var response = MapToResponse(recoveryEntry);
 
         return CreatedAtAction(
             nameof(GetRecoveryEntryById),
             new { id = recoveryEntry.Id },
-            recoveryEntry
+            response
         );
     }
 
     [HttpPut("{id:int}")]
     public async Task<IActionResult> UpdateRecoveryEntry(
         int id,
-        RecoveryEntry updatedRecoveryEntry
+        UpdateRecoveryEntryRequest request
     )
     {
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+        if (userId is null)
+        {
+            return Unauthorized();
+        }
+
         var existingRecoveryEntry =
-            await _dbContext.RecoveryEntries.FindAsync(id);
+            await _dbContext.RecoveryEntries
+                .SingleOrDefaultAsync(entry =>
+                    entry.Id == id &&
+                    entry.UserId == userId);
 
         if (existingRecoveryEntry is null)
         {
@@ -97,13 +182,13 @@ public class RecoveryEntriesController : ControllerBase
         }
 
         existingRecoveryEntry.SleepDurationHours =
-            updatedRecoveryEntry.SleepDurationHours;
+            request.SleepDurationHours;
         existingRecoveryEntry.SleepQuality =
-            updatedRecoveryEntry.SleepQuality;
+            request.SleepQuality;
         existingRecoveryEntry.MorningFeeling =
-            updatedRecoveryEntry.MorningFeeling;
+            request.MorningFeeling;
         existingRecoveryEntry.Date =
-            updatedRecoveryEntry.Date;
+            request.Date;
 
         await _dbContext.SaveChangesAsync();
 
@@ -113,8 +198,18 @@ public class RecoveryEntriesController : ControllerBase
     [HttpDelete("{id:int}")]
     public async Task<IActionResult> DeleteRecoveryEntry(int id)
     {
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+        if (userId is null)
+        {
+            return Unauthorized();
+        }
+
         var recoveryEntry =
-            await _dbContext.RecoveryEntries.FindAsync(id);
+            await _dbContext.RecoveryEntries
+                .SingleOrDefaultAsync(entry =>
+                    entry.Id == id &&
+                    entry.UserId == userId);
 
         if (recoveryEntry is null)
         {
@@ -125,5 +220,19 @@ public class RecoveryEntriesController : ControllerBase
         await _dbContext.SaveChangesAsync();
 
         return NoContent();
+    }
+
+    private static RecoveryEntryResponse MapToResponse(
+        RecoveryEntry recoveryEntry
+    )
+    {
+        return new RecoveryEntryResponse
+        {
+            Id = recoveryEntry.Id,
+            SleepDurationHours = recoveryEntry.SleepDurationHours,
+            SleepQuality = recoveryEntry.SleepQuality,
+            MorningFeeling = recoveryEntry.MorningFeeling,
+            Date = recoveryEntry.Date
+        };
     }
 }
