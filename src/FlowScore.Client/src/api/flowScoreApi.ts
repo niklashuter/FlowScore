@@ -1,3 +1,5 @@
+import { authorizedFetch } from "./apiClient";
+
 export type FlowScoreResult = {
     recoveryScore: number;
     nutritionScore: number;
@@ -17,7 +19,7 @@ export async function getFlowScore(
         ? `${apiBaseUrl}/${date}`
         : `${apiBaseUrl}/today`;
 
-    const response = await fetch(endpoint);
+    const response = await authorizedFetch(endpoint);
 
     if (!response.ok) {
         throw new Error("Failed to load FlowScore.");

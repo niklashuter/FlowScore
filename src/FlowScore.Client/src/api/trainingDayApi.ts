@@ -1,3 +1,5 @@
+import { authorizedFetch } from "./apiClient";
+
 export type TrainingDay = {
     id: number;
     date: string;
@@ -14,7 +16,7 @@ const apiBaseUrl =
 export async function getTrainingDayByDate(
     date: string
 ): Promise<TrainingDay | null> {
-    const response = await fetch(
+    const response = await authorizedFetch(
         `${apiBaseUrl}/by-date/${date}`
     );
 
@@ -33,13 +35,10 @@ export async function updateTrainingDay(
     date: string,
     request: UpdateTrainingDayRequest
 ): Promise<TrainingDay> {
-    const response = await fetch(
+    const response = await authorizedFetch(
         `${apiBaseUrl}/by-date/${date}`,
         {
             method: "PUT",
-            headers: {
-                "Content-Type": "application/json",
-            },
             body: JSON.stringify(request),
         }
     );

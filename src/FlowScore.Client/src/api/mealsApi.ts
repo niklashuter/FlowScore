@@ -1,3 +1,5 @@
+import { authorizedFetch } from "./apiClient";
+
 export type Meal = {
     id: number;
     type: string;
@@ -18,7 +20,9 @@ export type CreateMealRequest = {
 const apiBaseUrl = "http://localhost:5243/api/Meals";
 
 export async function getMealsByDate(date: string): Promise<Meal[]> {
-    const response = await fetch(`${apiBaseUrl}/by-date/${date}`);
+    const response = await authorizedFetch(
+        `${apiBaseUrl}/by-date/${date}`
+    );
 
     if (!response.ok) {
         throw new Error("Failed to load meals.");
@@ -30,11 +34,8 @@ export async function getMealsByDate(date: string): Promise<Meal[]> {
 export async function createMeal(
     meal: CreateMealRequest
 ): Promise<Meal> {
-    const response = await fetch(apiBaseUrl, {
+    const response = await authorizedFetch(apiBaseUrl, {
         method: "POST",
-        headers: {
-            "Content-Type": "application/json",
-        },
         body: JSON.stringify(meal),
     });
 
@@ -49,11 +50,8 @@ export async function updateMeal(
     id: number,
     meal: CreateMealRequest
 ): Promise<void> {
-    const response = await fetch(`${apiBaseUrl}/${id}`, {
+    const response = await authorizedFetch(`${apiBaseUrl}/${id}`, {
         method: "PUT",
-        headers: {
-            "Content-Type": "application/json",
-        },
         body: JSON.stringify(meal),
     });
 
@@ -63,7 +61,7 @@ export async function updateMeal(
 }
 
 export async function deleteMeal(id: number): Promise<void> {
-    const response = await fetch(`${apiBaseUrl}/${id}`, {
+    const response = await authorizedFetch(`${apiBaseUrl}/${id}`, {
         method: "DELETE",
     });
 

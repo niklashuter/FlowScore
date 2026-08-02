@@ -1,3 +1,5 @@
+import { authorizedFetch } from "./apiClient";
+
 export type TrainingSession = {
     id: number;
     type: string;
@@ -19,7 +21,7 @@ const apiBaseUrl =
 export async function getTrainingSessionsByDate(
     date: string
 ): Promise<TrainingSession[]> {
-    const response = await fetch(
+    const response = await authorizedFetch(
         `${apiBaseUrl}/by-date/${date}`
     );
 
@@ -33,11 +35,8 @@ export async function getTrainingSessionsByDate(
 export async function createTrainingSession(
     trainingSession: CreateTrainingSessionRequest
 ): Promise<TrainingSession> {
-    const response = await fetch(apiBaseUrl, {
+    const response = await authorizedFetch(apiBaseUrl, {
         method: "POST",
-        headers: {
-            "Content-Type": "application/json",
-        },
         body: JSON.stringify(trainingSession),
     });
 
@@ -52,11 +51,8 @@ export async function updateTrainingSession(
     id: number,
     trainingSession: CreateTrainingSessionRequest
 ): Promise<void> {
-    const response = await fetch(`${apiBaseUrl}/${id}`, {
+    const response = await authorizedFetch(`${apiBaseUrl}/${id}`, {
         method: "PUT",
-        headers: {
-            "Content-Type": "application/json",
-        },
         body: JSON.stringify(trainingSession),
     });
 
@@ -68,7 +64,7 @@ export async function updateTrainingSession(
 export async function deleteTrainingSession(
     id: number
 ): Promise<void> {
-    const response = await fetch(`${apiBaseUrl}/${id}`, {
+    const response = await authorizedFetch(`${apiBaseUrl}/${id}`, {
         method: "DELETE",
     });
 

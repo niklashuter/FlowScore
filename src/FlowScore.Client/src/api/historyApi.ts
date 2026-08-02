@@ -1,3 +1,5 @@
+import { authorizedFetch } from "./apiClient";
+
 const apiBaseUrl =
     "http://localhost:5243/api/History";
 
@@ -51,7 +53,7 @@ export async function getHistory(
         ? `${apiBaseUrl}?days=${days}`
         : apiBaseUrl;
 
-    const response = await fetch(endpoint);
+    const response = await authorizedFetch(endpoint);
 
     if (!response.ok) {
         const errorBody = await response.text();
@@ -67,7 +69,7 @@ export async function getHistory(
 export async function getHistoryDayDetails(
     date: string
 ): Promise<HistoryDayDetailsResponse> {
-    const response = await fetch(
+    const response = await authorizedFetch(
         `${apiBaseUrl}/${date}`
     );
 

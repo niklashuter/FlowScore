@@ -5,19 +5,23 @@ type ButtonProps = {
     onClick?: () => void;
     variant?: "primary" | "secondary" | "danger";
     disabled?: boolean;
+    type?: "button" | "submit" | "reset";
 };
 
-function Button ({ 
-    children, 
-    onClick, 
+function Button({
+    children,
+    onClick,
     variant = "primary",
     disabled = false,
+    type = "button",
 }: ButtonProps) {
-
     const variantClasses = {
-        primary:"bg-primary text-white hover:brightness-110 hover:-translate-y-0.5",
-        secondary:"bg-surface-light text-text-main hover:brightness-110 hover:-translate-y-0.5",
-        danger:"g-red-500 text-white hover:brightness-110 hover:-translate-y-0.5",
+        primary:
+            "bg-primary text-white hover:brightness-110 hover:-translate-y-0.5",
+        secondary:
+            "bg-surface-light text-text-main hover:brightness-110 hover:-translate-y-0.5",
+        danger:
+            "bg-red-500 text-white hover:brightness-110 hover:-translate-y-0.5",
     };
 
     const baseClasses =
@@ -25,11 +29,12 @@ function Button ({
 
     return (
         <button
+            type={type}
             onClick={onClick}
             className={clsx(
                 baseClasses,
                 variantClasses[variant],
-                disabled && "cursor-not-allowed opacity-50" 
+                disabled && "cursor-not-allowed opacity-50"
             )}
             disabled={disabled}
         >

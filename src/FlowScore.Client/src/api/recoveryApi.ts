@@ -1,3 +1,5 @@
+import { authorizedFetch } from "./apiClient";
+
 export type RecoveryEntry = {
     id: number;
     sleepDurationHours: number;
@@ -20,7 +22,7 @@ export async function getRecoveryEntryByDate(
     date: string
 ): Promise<RecoveryEntry | null> {
 
-    const response = await fetch(
+    const response = await authorizedFetch(
         `${apiBaseUrl}/by-date/${date}`
     );
 
@@ -41,11 +43,8 @@ export async function createRecoveryEntry(
     recoveryEntry: CreateRecoveryEntryRequest
 ): Promise<RecoveryEntry> {
 
-    const response = await fetch(apiBaseUrl, {
+    const response = await authorizedFetch(apiBaseUrl, {
         method: "POST",
-        headers: {
-            "Content-Type": "application/json",
-        },
         body: JSON.stringify(recoveryEntry),
     });
 
@@ -63,13 +62,10 @@ export async function updateRecoveryEntry(
     recoveryEntry: CreateRecoveryEntryRequest
 ): Promise<void> {
 
-    const response = await fetch(
+    const response = await authorizedFetch(
         `${apiBaseUrl}/${id}`,
         {
             method: "PUT",
-            headers: {
-                "Content-Type": "application/json",
-            },
             body: JSON.stringify(recoveryEntry),
         }
     );
