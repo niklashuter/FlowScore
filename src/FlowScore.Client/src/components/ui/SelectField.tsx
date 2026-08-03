@@ -10,6 +10,7 @@ type SelectFieldProps = {
     value: string;
     options: SelectOption[];
     onChange: (value: string) => void;
+    className?: string;
 };
 
 function SelectField({
@@ -17,6 +18,7 @@ function SelectField({
     value,
     options,
     onChange,
+    className = "",
 }: SelectFieldProps) {
     const [isOpen, setIsOpen] = useState(false);
     const containerRef = useRef<HTMLDivElement>(null);
@@ -84,7 +86,7 @@ function SelectField({
                 aria-haspopup="listbox"
                 aria-expanded={isOpen}
                 onClick={() => setIsOpen((currentValue) => !currentValue)}
-                className="
+                className={`
                     flex
                     h-10
                     w-full
@@ -104,7 +106,8 @@ function SelectField({
                     focus-visible:ring-primary
                     focus-visible:ring-offset-2
                     focus-visible:ring-offset-background
-                "
+                    ${className}
+                `}
             >
                 <span>{selectedOption?.label}</span>
 

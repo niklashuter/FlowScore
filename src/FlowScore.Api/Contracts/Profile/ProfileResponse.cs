@@ -1,10 +1,10 @@
-using Microsoft.AspNetCore.Identity;
+namespace FlowScore.Api.Contracts.Profile;
 
-namespace FlowScore.Api.Models;
-
-public class ApplicationUser : IdentityUser
+public class ProfileResponse
 {
     public string Name { get; set; } = string.Empty;
+
+    public string Email { get; set; } = string.Empty;
 
     public DateOnly? DateOfBirth { get; set; }
 

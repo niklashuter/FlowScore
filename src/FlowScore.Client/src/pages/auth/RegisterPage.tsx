@@ -7,7 +7,8 @@ import flowScoreLogo from "../../assets/logo.svg";
 import Button from "../../components/ui/Button";
 import { register } from "../../api/authApi";
 
-function LoginPage() {
+function RegisterPage() {
+    const [name, setName] = useState("");
     const navigate = useNavigate();
     const [showPassword, setShowPassword] = useState(false);
     const [email, setEmail] = useState("");
@@ -23,6 +24,7 @@ function LoginPage() {
 
         try {
             await register({
+                name,
                 email,
                 password,
             });
@@ -61,6 +63,21 @@ function LoginPage() {
                 >
                     <div>
                         <label className="mb-2 block text-sm font-medium text-slate-300">
+                            Name
+                        </label>
+
+                        <input
+                            type="text"
+                            value={name}
+                            onChange={(event) => setName(event.target.value)}
+                            required
+                            autoComplete="name"
+                            className="w-full rounded-xl border border-slate-700 bg-slate-800 px-4 py-3 text-white outline-none transition focus:border-cyan-400"
+                        />
+                    </div>
+
+                    <div>
+                        <label className="mb-2 block text-sm font-medium text-slate-300">
                             Email
                         </label>
 
@@ -82,22 +99,13 @@ function LoginPage() {
                         <div className="relative">
                             <input
                                 required
-                                autoComplete="current-password"
+                                autoComplete="new-password"
                                 type={showPassword ? "text" : "password"}
                                 value={password}
                                 onChange={(event) => setPassword(event.target.value)}
                                 className="w-full rounded-xl border border-slate-700 bg-slate-800 px-4 py-3 pr-12 text-white outline-none transition focus:border-cyan-400"
                             />
                             
-                            {error && (
-                                <div
-                                    role="alert"
-                                    className="rounded-xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-300"
-                                >
-                                    {error}
-                                </div>
-                            )}
-
                             <button
                                 type="button"
                                 onClick={() => setShowPassword((previous) => !previous)}
@@ -111,6 +119,15 @@ function LoginPage() {
                             </button>
                         </div>
                     </div>
+
+                    {error && (
+                        <div
+                            role="alert"
+                            className="rounded-xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-300"
+                        >
+                            {error}
+                        </div>
+                    )}
 
                     <div className="pt-2">
                         <Button
@@ -136,4 +153,4 @@ function LoginPage() {
     );
 }
 
-export default LoginPage;
+export default RegisterPage;

@@ -1,8 +1,6 @@
-using Microsoft.AspNetCore.Identity;
+namespace FlowScore.Api.Contracts.Profile;
 
-namespace FlowScore.Api.Models;
-
-public class ApplicationUser : IdentityUser
+public class UpdateProfileRequest
 {
     public string Name { get; set; } = string.Empty;
 
