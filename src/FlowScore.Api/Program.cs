@@ -12,10 +12,28 @@ var builder = WebApplication.CreateBuilder(args);
 const string frontendCorsPolicy = "FrontendCorsPolicy";
 
 builder.Services.AddDbContext<FlowScoreDbContext>(options =>
-    options.UseSqlite(
+{
+    var connectionString =
         builder.Configuration.GetConnectionString("DefaultConnection")
-    )
-);
+        ?? throw new InvalidOperationException(
+            "Database connection string is missing."
+        );
+
+    if (builder.Environment.IsDevelopment())
+    {
+        options.UseSqlite(connectionString);
+    }
+    else
+    {
+        options.UseNpgsql(
+            connectionString,
+            npgsqlOptions =>
+                npgsqlOptions.MigrationsAssembly(
+                    "FlowScore.Api.Migrations.Postgres"
+                )
+        );
+    }
+});
 
 builder.Services
     .AddIdentity<ApplicationUser, IdentityRole>(options =>
@@ -30,12 +48,15 @@ builder.Services
     .AddEntityFrameworkStores<FlowScoreDbContext>()
     .AddDefaultTokenProviders();
 
+var frontendUrl = builder.Configuration["Frontend:Url"]
+    ?? throw new InvalidOperationException("Frontend URL is missing.");
+
 builder.Services.AddCors(options =>
 {
     options.AddPolicy(frontendCorsPolicy, policy =>
     {
         policy
-            .WithOrigins("http://localhost:5173")
+            .WithOrigins(frontendUrl)
             .AllowAnyHeader()
             .AllowAnyMethod();
     });

@@ -1,7 +1,7 @@
 import { authorizedFetch } from "./apiClient";
+import apiBaseUrl from "./config";
 
-const apiBaseUrl =
-    "http://localhost:5243/api/History";
+const historyApiUrl = `${apiBaseUrl}/History`;
 
 export type HistoryDayResponse = {
     date: string;
@@ -50,8 +50,8 @@ export async function getHistory(
     days?: number
 ): Promise<HistoryDayResponse[]> {
     const endpoint = days !== undefined
-        ? `${apiBaseUrl}?days=${days}`
-        : apiBaseUrl;
+        ? `${historyApiUrl}?days=${days}`
+        : historyApiUrl;
 
     const response = await authorizedFetch(endpoint);
 
@@ -70,7 +70,7 @@ export async function getHistoryDayDetails(
     date: string
 ): Promise<HistoryDayDetailsResponse> {
     const response = await authorizedFetch(
-        `${apiBaseUrl}/${date}`
+        `${historyApiUrl}/${date}`
     );
 
     if (!response.ok) {

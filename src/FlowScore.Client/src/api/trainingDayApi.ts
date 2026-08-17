@@ -1,4 +1,5 @@
 import { authorizedFetch } from "./apiClient";
+import apiBaseUrl from "./config";
 
 export type TrainingDay = {
     id: number;
@@ -10,14 +11,13 @@ export type UpdateTrainingDayRequest = {
     isRestDay: boolean;
 };
 
-const apiBaseUrl =
-    "http://localhost:5243/api/TrainingDays";
+const trainingDayApiUrl = `${apiBaseUrl}/TrainingDays`;
 
 export async function getTrainingDayByDate(
     date: string
 ): Promise<TrainingDay | null> {
     const response = await authorizedFetch(
-        `${apiBaseUrl}/by-date/${date}`
+        `${trainingDayApiUrl}/by-date/${date}`
     );
 
     if (response.status === 404) {
@@ -36,7 +36,7 @@ export async function updateTrainingDay(
     request: UpdateTrainingDayRequest
 ): Promise<TrainingDay> {
     const response = await authorizedFetch(
-        `${apiBaseUrl}/by-date/${date}`,
+        `${trainingDayApiUrl}/by-date/${date}`,
         {
             method: "PUT",
             body: JSON.stringify(request),

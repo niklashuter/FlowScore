@@ -1,4 +1,4 @@
-const API_BASE_URL = "http://localhost:5243/api";
+import apiBaseUrl from "./config";
 
 export type LoginRequest = {
     email: string;
@@ -25,7 +25,7 @@ export async function login(
     request: LoginRequest
 ): Promise<LoginResponse> {
     const response = await fetch(
-        `${API_BASE_URL}/Auth/login`,
+        `${apiBaseUrl}/Auth/login`,
         {
             method: "POST",
             headers: {
@@ -46,7 +46,7 @@ export async function register(
     request: RegisterRequest
 ): Promise<RegisterResponse> {
     const response = await fetch(
-        `${API_BASE_URL}/Auth/register`,
+        `${apiBaseUrl}/Auth/register`,
         {
             method: "POST",
             headers: {

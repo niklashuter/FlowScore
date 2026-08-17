@@ -1,4 +1,5 @@
 import { authorizedFetch } from "./apiClient";
+import apiBaseUrl from "./config";
 
 export type RecoveryEntry = {
     id: number;
@@ -15,15 +16,14 @@ export type CreateRecoveryEntryRequest = {
     date: string;
 };
 
-const apiBaseUrl =
-    "http://localhost:5243/api/RecoveryEntries";
+const recoveryApiUrl = `${apiBaseUrl}/RecoveryEntries`;
 
 export async function getRecoveryEntryByDate(
     date: string
 ): Promise<RecoveryEntry | null> {
 
     const response = await authorizedFetch(
-        `${apiBaseUrl}/by-date/${date}`
+        `${recoveryApiUrl}/by-date/${date}`
     );
 
     if (response.status === 404) {
@@ -43,7 +43,7 @@ export async function createRecoveryEntry(
     recoveryEntry: CreateRecoveryEntryRequest
 ): Promise<RecoveryEntry> {
 
-    const response = await authorizedFetch(apiBaseUrl, {
+    const response = await authorizedFetch(recoveryApiUrl, {
         method: "POST",
         body: JSON.stringify(recoveryEntry),
     });
@@ -63,7 +63,7 @@ export async function updateRecoveryEntry(
 ): Promise<void> {
 
     const response = await authorizedFetch(
-        `${apiBaseUrl}/${id}`,
+        `${recoveryApiUrl}/${id}`,
         {
             method: "PUT",
             body: JSON.stringify(recoveryEntry),

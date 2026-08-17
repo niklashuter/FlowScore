@@ -1,4 +1,5 @@
 import { authorizedFetch } from "./apiClient";
+import apiBaseUrl from "./config";
 
 export type FlowScoreResult = {
     recoveryScore: number;
@@ -8,16 +9,15 @@ export type FlowScoreResult = {
     balanceValue: string;
 };
 
-const apiBaseUrl =
-    "http://localhost:5243/api/FlowScore";
+const flowScoreApiUrl = `${apiBaseUrl}/FlowScore`;
 
 export async function getFlowScore(
     date?: string
 ): Promise<FlowScoreResult> {
 
     const endpoint = date
-        ? `${apiBaseUrl}/${date}`
-        : `${apiBaseUrl}/today`;
+        ? `${flowScoreApiUrl}/${date}`
+        : `${flowScoreApiUrl}/today`;
 
     const response = await authorizedFetch(endpoint);
 

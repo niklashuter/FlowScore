@@ -1,6 +1,7 @@
 import { authorizedFetch } from "./apiClient";
+import apiBaseUrl from "./config";
 
-const apiBaseUrl = "http://localhost:5243/api/Profile";
+const profileApiUrl = `${apiBaseUrl}/Profile`;
 
 export type Profile = {
     name: string;
@@ -20,7 +21,7 @@ export type UpdateProfileRequest = {
 };
 
 export async function getProfile(): Promise<Profile> {
-    const response = await authorizedFetch(apiBaseUrl);
+    const response = await authorizedFetch(profileApiUrl);
 
     if (!response.ok) {
         throw new Error("Failed to load profile.");
@@ -32,7 +33,7 @@ export async function getProfile(): Promise<Profile> {
 export async function updateProfile(
     profile: UpdateProfileRequest
 ): Promise<Profile> {
-    const response = await authorizedFetch(apiBaseUrl, {
+    const response = await authorizedFetch(profileApiUrl, {
         method: "PUT",
         body: JSON.stringify(profile),
     });

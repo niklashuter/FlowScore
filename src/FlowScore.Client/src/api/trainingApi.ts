@@ -1,4 +1,5 @@
 import { authorizedFetch } from "./apiClient";
+import apiBaseUrl from "./config";
 
 export type TrainingSession = {
     id: number;
@@ -15,14 +16,13 @@ export type CreateTrainingSessionRequest = {
     date: string;
 };
 
-const apiBaseUrl =
-    "http://localhost:5243/api/TrainingSessions";
+const trainingApiUrl = `${apiBaseUrl}/TrainingSessions`;
 
 export async function getTrainingSessionsByDate(
     date: string
 ): Promise<TrainingSession[]> {
     const response = await authorizedFetch(
-        `${apiBaseUrl}/by-date/${date}`
+        `${trainingApiUrl}/by-date/${date}`
     );
 
     if (!response.ok) {
@@ -35,7 +35,7 @@ export async function getTrainingSessionsByDate(
 export async function createTrainingSession(
     trainingSession: CreateTrainingSessionRequest
 ): Promise<TrainingSession> {
-    const response = await authorizedFetch(apiBaseUrl, {
+    const response = await authorizedFetch(trainingApiUrl, {
         method: "POST",
         body: JSON.stringify(trainingSession),
     });
@@ -51,7 +51,7 @@ export async function updateTrainingSession(
     id: number,
     trainingSession: CreateTrainingSessionRequest
 ): Promise<void> {
-    const response = await authorizedFetch(`${apiBaseUrl}/${id}`, {
+    const response = await authorizedFetch(`${trainingApiUrl}/${id}`, {
         method: "PUT",
         body: JSON.stringify(trainingSession),
     });
@@ -64,7 +64,7 @@ export async function updateTrainingSession(
 export async function deleteTrainingSession(
     id: number
 ): Promise<void> {
-    const response = await authorizedFetch(`${apiBaseUrl}/${id}`, {
+    const response = await authorizedFetch(`${trainingApiUrl}/${id}`, {
         method: "DELETE",
     });
 

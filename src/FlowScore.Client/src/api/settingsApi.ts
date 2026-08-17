@@ -1,6 +1,7 @@
 import { authorizedFetch } from "./apiClient";
+import apiBaseUrl from "./config";
 
-const apiBaseUrl = "http://localhost:5243/api/Settings";
+const settingsApiUrl = `${apiBaseUrl}/Settings`;
 
 export type ChangePasswordRequest = {
     currentPassword: string;
@@ -11,7 +12,7 @@ export async function changePassword(
     request: ChangePasswordRequest
 ): Promise<void> {
     const response = await authorizedFetch(
-        `${apiBaseUrl}/password`,
+        `${settingsApiUrl}/password`,
         {
             method: "PUT",
             body: JSON.stringify(request),

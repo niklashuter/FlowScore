@@ -1,4 +1,5 @@
 import { authorizedFetch } from "./apiClient";
+import apiBaseUrl from "./config";
 
 export type Meal = {
     id: number;
@@ -17,11 +18,11 @@ export type CreateMealRequest = {
     date: string;
 };
 
-const apiBaseUrl = "http://localhost:5243/api/Meals";
+const mealsApiUrl = `${apiBaseUrl}/Meals`;
 
 export async function getMealsByDate(date: string): Promise<Meal[]> {
     const response = await authorizedFetch(
-        `${apiBaseUrl}/by-date/${date}`
+        `${mealsApiUrl}/by-date/${date}`
     );
 
     if (!response.ok) {
@@ -34,7 +35,7 @@ export async function getMealsByDate(date: string): Promise<Meal[]> {
 export async function createMeal(
     meal: CreateMealRequest
 ): Promise<Meal> {
-    const response = await authorizedFetch(apiBaseUrl, {
+    const response = await authorizedFetch(mealsApiUrl, {
         method: "POST",
         body: JSON.stringify(meal),
     });
@@ -50,7 +51,7 @@ export async function updateMeal(
     id: number,
     meal: CreateMealRequest
 ): Promise<void> {
-    const response = await authorizedFetch(`${apiBaseUrl}/${id}`, {
+    const response = await authorizedFetch(`${mealsApiUrl}/${id}`, {
         method: "PUT",
         body: JSON.stringify(meal),
     });
@@ -61,7 +62,7 @@ export async function updateMeal(
 }
 
 export async function deleteMeal(id: number): Promise<void> {
-    const response = await authorizedFetch(`${apiBaseUrl}/${id}`, {
+    const response = await authorizedFetch(`${mealsApiUrl}/${id}`, {
         method: "DELETE",
     });
 
