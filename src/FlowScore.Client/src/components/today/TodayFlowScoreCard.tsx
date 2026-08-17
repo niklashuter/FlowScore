@@ -19,7 +19,7 @@ function TodayFlowScoreCard({
     const [scores, setScores] =
         useState<FlowScoreResult | null>(null);
 
-    const [isLoading, setIsLoading] = useState(true);
+    const [, setIsLoading] = useState(true);
     const [error, setError] = useState("");
 
     useEffect(() => {

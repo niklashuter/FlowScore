@@ -2,8 +2,6 @@ import { useState } from "react";
 import { ChevronDown, ChevronUp } from "lucide-react";
 import type { HistoryDayResponse } from "../../api/historyApi";
 import { getScoreColor } from "../../utils/scoreColor";
-import Card from "../ui/Card";
-import FlowScoreTriangle from "../flowscore/FlowScoreTriangle";
 import HistoryDetailGrid from "./HistoryDetailGrid";
 import {
     getHistoryDayDetails,

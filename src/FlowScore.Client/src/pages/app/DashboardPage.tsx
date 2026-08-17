@@ -21,9 +21,9 @@ function DashboardPage(){
     const [scores, setScores] =
         useState<FlowScoreResult | null>(null);
 
-    const [isLoading, setIsLoading] = useState(true);
+    const [, setIsLoading] = useState(true);
 
-    const [error, setError] = useState("");
+    const [, setError] = useState("");
 
     const [history, setHistory] =
     useState<HistoryDayResponse[]>([]);

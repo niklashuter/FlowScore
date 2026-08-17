@@ -19,10 +19,10 @@ function HistoryPage() {
     const [history, setHistory] =
         useState<HistoryDayResponse[]>([]);
 
-    const [isLoading, setIsLoading] =
+    const [, setIsLoading] =
         useState(true);
 
-    const [error, setError] =
+    const [, setError] =
         useState("");
 
     useEffect(() => {
