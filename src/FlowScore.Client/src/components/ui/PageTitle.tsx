@@ -9,7 +9,7 @@ function PageTitle({
 }: PageTitleProps) {
     return (
         <div>
-            <h1 className="text-3xl font-bold text-text-main">
+            <h1 className="text-2xl font-bold text-text-main sm:text-3xl">
                 {title}
             </h1>
 

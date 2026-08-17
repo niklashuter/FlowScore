@@ -90,7 +90,7 @@ function HistoryPage() {
 
                 <div className="space-y-3">
                     {history.length === 0 ? (
-                        <div className="rounded-2xl border border-border bg-surface p-6">
+                        <div className="rounded-2xl border border-border bg-surface p-4 sm:p-6">
                             <p className="text-sm text-text-muted">
                                 No previous days are available yet.
                             </p>

@@ -28,7 +28,7 @@ function Modal({
                 role="dialog"
                 aria-modal="true"
                 aria-labelledby="modal-title"
-                className="relative z-10 w-full max-w-lg rounded-2xl border border-border bg-surface p-6 shadow-2xl"
+                className="relative z-10 max-h-[calc(100vh-2rem)] w-full max-w-lg overflow-y-auto rounded-2xl border border-border bg-surface p-4 shadow-2xl sm:p-6"
             >
                 <div className="flex items-start justify-between gap-4">
                     <h2

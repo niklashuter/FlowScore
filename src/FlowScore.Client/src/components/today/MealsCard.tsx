@@ -164,7 +164,7 @@ function MealsCard({
     return (
         <Card>
             <div className="space-y-5">
-                <div className="flex items-start justify-between gap-4">
+                <div className="flex flex-col items-start gap-4 sm:flex-row sm:justify-between">
                     <div>
                         <h2 className="text-xl font-semibold text-text-main">
                             Meals
@@ -219,7 +219,7 @@ function MealsCard({
                                 key={meal.id}
                                 className="rounded-xl bg-surface-light p-4"
                             >
-                                <div className="flex items-start justify-between gap-4">
+                                <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
                                     <div>
                                         <div className="flex items-center gap-3">
                                             <p className="font-medium text-text-main">

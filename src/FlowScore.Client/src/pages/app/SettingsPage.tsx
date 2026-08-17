@@ -179,7 +179,7 @@ function SettingsPage(){
                                     Profile
                                 </p>
 
-                                <div className="mt-2 flex items-center justify-between gap-4">
+                                <div className="mt-2 flex flex-col items-start gap-3 sm:flex-row sm:items-center sm:justify-between">
                                     <p className="text-sm text-text-muted">
                                         Manage your personal information.
                                     </p>
@@ -270,7 +270,7 @@ function SettingsPage(){
                                 </p>
                             )}
 
-                            <div className="mt-auto flex justify-end">
+                            <div className="mt-4 flex justify-end lg:mt-auto">
                                 <Button
                                     variant="primary"
                                     onClick={handleChangePassword}
@@ -326,7 +326,7 @@ function SettingsPage(){
                                 Repository
                             </p>
 
-                            <div className="mt-2 flex items-center justify-between gap-4">
+                            <div className="mt-2 flex flex-col items-start gap-3 sm:flex-row sm:items-center sm:justify-between">
                                 <p className="text-sm text-text-muted">
                                     View the source code on GitHub.
                                 </p>

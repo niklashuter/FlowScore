@@ -42,7 +42,7 @@ const navigationItems = [
 
 function Sidebar() {
     return (
-        <aside className="sticky top-24 flex h-[calc(100vh-6rem)] w-64 flex-col border-r border-slate-800 bg-slate-950">
+        <aside className="sticky top-24 hidden h-[calc(100vh-6rem)] w-64 flex-col border-r border-slate-800 bg-slate-950 lg:flex">
             <div className="border-b border-slate-800 px-6 py-8">
                 <div className="border-l-2 border-cyan-400 pl-4">
                     <p className="text-lg font-medium leading-relaxed text-slate-300">

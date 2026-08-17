@@ -108,7 +108,7 @@ function FlowScoreTriangle({
     const triangle = (
         <svg
             viewBox="0 0 320 280"
-            className="h-96 w-full"
+            className="h-auto w-full max-h-96"
             role="img"
             aria-label="FlowScore balance triangle"
         >

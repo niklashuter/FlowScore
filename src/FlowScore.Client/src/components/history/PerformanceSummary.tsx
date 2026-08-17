@@ -29,18 +29,18 @@ function SummaryCard({
     const scoreColor = getScoreColor(value);
 
     return (
-        <div className="rounded-xl border border-slate-700 bg-slate-900 p-5">
+        <div className="rounded-xl border border-slate-700 bg-slate-900 px-5 py-3 sm:p-5">
             <p className="text-sm text-slate-400">
                 {title}
             </p>
 
             <h2
-                className={`mt-2 text-3xl font-bold ${scoreColor.text}`}
+                className={`mt-1 text-3xl font-bold sm:mt-2 ${scoreColor.text}`}
             >
                 {value}
             </h2>
 
-            <p className="mt-1 text-xs text-slate-500">
+            <p className="text-xs text-slate-500 sm:mt-1">
                 Average
             </p>
         </div>
@@ -69,7 +69,7 @@ function PerformanceSummary({
 
     return (
 
-        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+        <div className="grid grid-cols-2 gap-3 sm:gap-4 xl:grid-cols-4">
             <SummaryCard
                 title="FlowScore"
                 value={flowScoreAverage}

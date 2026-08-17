@@ -62,7 +62,7 @@ function HistoryDayCard({
             <button
                 type="button"
                 onClick={handleToggle}
-                className="flex w-full items-center justify-between p-5 text-left transition-colors hover:bg-surface-light"
+                className="flex w-full items-center justify-between p-4 text-left transition-colors hover:bg-surface-light sm:p-5"
             >
                 <div>
                     <h3 className="font-semibold text-text-main">
@@ -88,7 +88,7 @@ function HistoryDayCard({
                 )}
             </button>
             {isExpanded && (
-                <div className="border-t border-border p-6">
+                <div className="border-t border-border p-4 sm:p-6">
                     {loadingDetails && (
                         <p className="text-sm text-text-muted">
                             Loading details...

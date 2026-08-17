@@ -46,7 +46,7 @@ function FlowScoreHistoryCard({
 }: FlowScoreHistoryCardProps) {
     if (data.length === 0) {
         return (
-            <div className="rounded-2xl border border-border bg-surface p-6">
+            <div className="rounded-2xl border border-border bg-surface p-4 sm:p-6">
                 <h2 className="text-xl font-semibold text-text-main">
                     FlowScore History
                 </h2>
@@ -73,7 +73,7 @@ function FlowScoreHistoryCard({
     const targetScore = 70;
 
     return (
-        <div className="rounded-2xl border border-border bg-surface p-6">
+        <div className="rounded-2xl border border-border bg-surface p-4 sm:p-6">
             <div>
                 <h2 className="text-xl font-semibold text-text-main">
                     FlowScore History
@@ -86,7 +86,7 @@ function FlowScoreHistoryCard({
                 <div className="mt-6">
                     <svg
                         viewBox="0 0 620 230"
-                        className="h-72 w-full"
+                        className="h-auto w-full max-h-72"
                         role="img"
                         aria-label="FlowScore trend over the last seven days"
                     >

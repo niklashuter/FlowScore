@@ -38,7 +38,7 @@ function LoginPage() {
 
     return (
         <div className="w-full max-w-md">
-            <div className="rounded-2xl border border-slate-800 bg-slate-900 p-10 shadow-2xl">
+            <div className="rounded-2xl border border-slate-800 bg-slate-900 p-6 sm:p-10 shadow-2xl">
 
                 <div className="mb-10 flex flex-col items-center">
                     <img

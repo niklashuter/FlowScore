@@ -249,7 +249,7 @@ function TrainingCard({
     return (
         <Card>
             <div className="space-y-5">
-                <div className="flex items-start justify-between gap-4">
+                <div className="flex flex-col items-start gap-4 sm:flex-row sm:justify-between">
                    <div>
                         <h2 className="text-xl font-semibold text-text-main">
                             Training
