@@ -16,6 +16,7 @@ import {
     getHistory,
     type HistoryDayResponse,
 } from "../../api/historyApi";
+import { getTodayDateString } from "../../utils/date";
 
 function DashboardPage(){
     const [scores, setScores] =
@@ -34,13 +35,15 @@ function DashboardPage(){
             setError("");
 
             try {
+                const today = getTodayDateString();
+
                 const loadedScores =
-                    await getFlowScore();
+                    await getFlowScore(today);
 
                 setScores(loadedScores);
 
                 const loadedHistory =
-                    await getHistory(7);
+                    await getHistory(7, today);
 
                 setHistory(loadedHistory);
             } catch (error) {

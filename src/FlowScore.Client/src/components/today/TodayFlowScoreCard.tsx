@@ -29,7 +29,7 @@ function TodayFlowScoreCard({
 
             try {
                 const loadedScores =
-                    await getFlowScore();
+                    await getFlowScore(today);
 
                 setScores(loadedScores);
             } catch (error) {

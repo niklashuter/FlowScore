@@ -47,10 +47,23 @@ export type HistoryDayDetailsResponse = {
 };
 
 export async function getHistory(
-    days?: number
+    days?: number,
+    endDate?: string
 ): Promise<HistoryDayResponse[]> {
-    const endpoint = days !== undefined
-        ? `${historyApiUrl}?days=${days}`
+    const params = new URLSearchParams();
+
+    if (days !== undefined) {
+        params.set("days", days.toString());
+    }
+
+    if (endDate !== undefined) {
+        params.set("endDate", endDate);
+    }
+
+    const queryString = params.toString();
+
+    const endpoint = queryString
+        ? `${historyApiUrl}?${queryString}`
         : historyApiUrl;
 
     const response = await authorizedFetch(endpoint);

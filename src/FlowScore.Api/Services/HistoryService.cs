@@ -19,7 +19,8 @@ public class HistoryService
 
     public async Task<List<HistoryDayResponse>> GetHistoryAsync(
         string userId,
-        int? days = null
+        int? days = null,
+        DateOnly? endDate = null
     )
     {
         var recoveryDates = await _dbContext.RecoveryEntries
@@ -53,7 +54,7 @@ public class HistoryService
         
         if (days.HasValue)
         {
-            var today = DateOnly.FromDateTime(DateTime.Today);
+            var today = endDate ?? DateOnly.FromDateTime(DateTime.Today);
             var startDate = today.AddDays(-(days.Value - 1));
 
             dates = dates

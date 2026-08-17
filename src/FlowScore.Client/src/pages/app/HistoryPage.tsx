@@ -10,9 +10,9 @@ import {
     type HistoryDayResponse,
 } from "../../api/historyApi";
 import HistoryDayCard from "../../components/history/HistoryDayCard";
+import { getTodayDateString } from "../../utils/date";
 
 function HistoryPage() {
-
     const [selectedPeriod, setSelectedPeriod] =
         useState<HistoryPeriod>(7);
 
@@ -32,8 +32,10 @@ function HistoryPage() {
             setError("");
 
             try {
+                const today = getTodayDateString();
+
                 const result =
-                    await getHistory(selectedPeriod);
+                    await getHistory(selectedPeriod, today);
 
                 setHistory(result);
             } catch {

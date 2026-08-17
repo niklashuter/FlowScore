@@ -20,7 +20,8 @@ public class HistoryController : ControllerBase
 
     [HttpGet]
     public async Task<ActionResult<List<HistoryDayResponse>>> GetHistory(
-        [FromQuery] int? days
+        [FromQuery] int? days,
+        [FromQuery] DateOnly? endDate
     )
     {
         var userId = User.FindFirstValue(
@@ -41,7 +42,8 @@ public class HistoryController : ControllerBase
 
         var history = await _historyService.GetHistoryAsync(
             userId,
-            days
+            days,
+            endDate
         );
 
         return Ok(history);
