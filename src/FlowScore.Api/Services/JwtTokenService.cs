@@ -22,7 +22,7 @@ public class JwtTokenService
 
         var issuer = _configuration["Jwt:Issuer"];
         var audience = _configuration["Jwt:Audience"];
-        var expiresAt = DateTime.UtcNow.AddHours(12);
+        var expiresAt = DateTime.UtcNow.AddDays(30);
 
         var claims = new List<Claim>
         {
