@@ -38,6 +38,10 @@ public class FlowScoreDbContext : IdentityDbContext<ApplicationUser>
             .HasForeignKey(entry => entry.UserId)
             .OnDelete(DeleteBehavior.Cascade);
 
+        builder.Entity<RecoveryEntry>()
+            .HasIndex(entry => new { entry.UserId, entry.Date })
+            .IsUnique();
+
         builder.Entity<TrainingDay>()
             .HasOne(day => day.User)
             .WithMany()

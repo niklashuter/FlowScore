@@ -160,7 +160,8 @@ namespace FlowScore.Api.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("UserId");
+                    b.HasIndex("UserId", "Date")
+                        .IsUnique();
 
                     b.ToTable("RecoveryEntries");
                 });

@@ -115,7 +115,7 @@ public class RecoveryEntriesController : ControllerBase
 
     [HttpPost]
     public async Task<ActionResult<RecoveryEntryResponse>>
-        CreateRecoveryEntry(CreateRecoveryEntryRequest request)
+    CreateRecoveryEntry(CreateRecoveryEntryRequest request)
     {
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
@@ -146,7 +146,27 @@ public class RecoveryEntriesController : ControllerBase
         };
 
         _dbContext.RecoveryEntries.Add(recoveryEntry);
-        await _dbContext.SaveChangesAsync();
+
+        try
+        {
+            await _dbContext.SaveChangesAsync();
+        }
+        catch (DbUpdateException)
+        {
+            var entryForDateNowExists =
+                await _dbContext.RecoveryEntries.AnyAsync(entry =>
+                    entry.UserId == userId &&
+                    entry.Date == request.Date);
+
+            if (entryForDateNowExists)
+            {
+                return Conflict(
+                    "A recovery entry already exists for this date."
+                );
+            }
+
+            throw;
+        }
 
         var response = MapToResponse(recoveryEntry);
 
@@ -190,7 +210,27 @@ public class RecoveryEntriesController : ControllerBase
         existingRecoveryEntry.Date =
             request.Date;
 
-        await _dbContext.SaveChangesAsync();
+        try
+        {
+            await _dbContext.SaveChangesAsync();
+        }
+        catch (DbUpdateException)
+        {
+            var entryForDateAlreadyExists =
+                await _dbContext.RecoveryEntries.AnyAsync(entry =>
+                    entry.UserId == userId &&
+                    entry.Date == request.Date &&
+                    entry.Id != id);
+
+            if (entryForDateAlreadyExists)
+            {
+                return Conflict(
+                    "A recovery entry already exists for this date."
+                );
+            }
+
+            throw;
+        }
 
         return NoContent();
     }
